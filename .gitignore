@@ -1,0 +1,80 @@
+# ===============================
+# Node.js & Backend
+# ===============================
+# Node modules
+node_modules/
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+# Coverage directory
+coverage/
+# dotenv environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+# Optional npm cache directory
+.npm
+# Build output (if backend has build step)
+dist/
+
+# ===============================
+# React Frontend
+# ===============================
+# Build output
+build/
+# Dependency directories
+node_modules/
+# Testing coverage
+coverage/
+demo video/
+# Local environment files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ===============================
+# IDE & OS
+# ===============================
+# Windows
+Thumbs.db
+# macOS
+.DS_Store
+# VS Code
+.vscode/
+# JetBrains IDEs
+.idea/
+*.iml
+# Misc
+*.log
+*.swp
+*.swo
+*.bak
+# ===============================
+# Miscellaneous
+# Temporary files
+tmp/    
+temp/
+# Backup files
+*.bak
+# Generated files
+*.generated.js
+
+# ===============================
+# Custom ignores
+# Add any project-specific files or directories to ignore below
+# ===============================
+# Example: Ignore a custom config file
+custom-config.json
+# Example: Ignore a specific directory
+custom-directory/
