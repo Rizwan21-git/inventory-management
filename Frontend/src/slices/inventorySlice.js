@@ -1,20 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-// import { inventoryAPI } from "../services/api";
-// TEMPORARY: Use mock data until backend is ready
-import mockApi from "../services/mockApi";
-
-// export const fetchInventory = createAsyncThunk(
-//   "inventory/fetchAll",
-//   async (params = {}) => {
-//     return await inventoryAPI.getAll(params);
-//   }
-// );
+import { inventoryAPI } from "../services/api";
 
 export const fetchInventory = createAsyncThunk(
-  "inventory/fetchInventory",
-  async (params) => {
-    const response = await mockApi.getInventory(params);
-    return response.data;
+  "inventory/fetchAll",
+  async (params = {}) => {
+    return await inventoryAPI.getAll(params);
   }
 );
 
@@ -59,13 +49,6 @@ export const deleteInventoryItem = createAsyncThunk(
   }
 );
 
-export const fetchLowStock = createAsyncThunk(
-  "inventory/fetchLowStock",
-  async () => {
-    return await inventoryAPI.getLowStock();
-  }
-);
-
 export const updateStock = createAsyncThunk(
   "inventory/updateStock",
   async (id, quantity, { rejectWithValue }) => {
@@ -86,7 +69,6 @@ const inventorySlice = createSlice({
     lowStockItems: [],
     loading: false,
     error: null,
-    totalItems: 0,
   },
   reducers: {
     clearCurrentItem: (state) => {
@@ -104,8 +86,7 @@ const inventorySlice = createSlice({
       })
       .addCase(fetchInventory.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload.items;
-        state.totalItems = action.payload.totalItems;
+        state.items = action.payload;
       })
       .addCase(fetchInventory.rejected, (state, action) => {
         state.loading = false;
@@ -121,13 +102,15 @@ const inventorySlice = createSlice({
       })
       // Create
       .addCase(createInventoryItem.fulfilled, (state, action) => {
-        state.items.unshift(action.payload);
-        state.totalItems += 1;
+        state.items.push(action.payload);
+      })
+      .addCase(createInventoryItem.rejected, (state, action) => {
+        state.error = action.payload;
       })
       // Update
       .addCase(updateInventoryItem.fulfilled, (state, action) => {
         const index = state.items.findIndex(
-          (item) => item.id === action.payload.id
+          (item) => item._id === action.payload._id
         );
         if (index !== -1) {
           state.items[index] = action.payload;
@@ -135,12 +118,7 @@ const inventorySlice = createSlice({
       })
       // Delete
       .addCase(deleteInventoryItem.fulfilled, (state, action) => {
-        state.items = state.items.filter((item) => item.id !== action.payload);
-        state.totalItems -= 1;
-      })
-      // Low stock
-      .addCase(fetchLowStock.fulfilled, (state, action) => {
-        state.lowStockItems = action.payload;
+        state.items = state.items.filter((item) => item._id !== action.payload);
       })
       //update stock
       .addCase(updateStock.rejected, (state)=>{

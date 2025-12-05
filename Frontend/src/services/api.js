@@ -4,7 +4,7 @@ import axios from "axios";
 // import { addRevenue } from "../slices/revenueSlice";
 
 const API_BASE_URL =
-  import.meta.env.API_BASE_URL || "http://localhost:5000/api";
+  import.meta.env.API_BASE_URL || "http://localhost:5000";
 
 // Create axios instance
 const api = axios.create({
@@ -54,28 +54,27 @@ export const inventoryAPI = {
   create: (data) => api.post("/inventory", data),
   update: (id, data) => api.put(`/inventory/${id}`, data),
   delete: (id) => api.delete(`/inventory/${id}`),
-  getLowStock: () => api.get("/inventory/low-stock"),
   updateStock: (id, quantity) => api.patch(`/inventory/${id}/stock`, quantity),
 };
 
 // Finance APIs
-export const financeAPI = {
-  getAll: (params) => api.get("/finance", { params }),
-  getById: (id) => api.get(`/finance/${id}`),
-  create: (data) => api.post("/finance", data),
-  update: (id, data) => api.put(`/finance/${id}`, data),
-  delete: (id) => api.delete(`/finance/${id}`),
-  getPendingPayments: () => api.get("/finance/pending"),
-  uploadPaymentProof: (id, file) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    return api.post(`/finance/${id}/upload-proof`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-  },
-  getRevenueReport: (params) => api.get("/finance/revenue", { params }),
-  getIncomeSheet: (params) => api.get("/finance/income-sheet", { params }),
-};
+// export const financeAPI = {
+//   getAll: (params) => api.get("/finance", { params }),
+//   getById: (id) => api.get(`/finance/${id}`),
+//   create: (data) => api.post("/finance", data),
+//   update: (id, data) => api.put(`/finance/${id}`, data),
+//   delete: (id) => api.delete(`/finance/${id}`),
+//   getPendingPayments: () => api.get("/finance/pending"),
+//   uploadPaymentProof: (id, file) => {
+//     const formData = new FormData();
+//     formData.append("file", file);
+//     return api.post(`/finance/${id}/upload-proof`, formData, {
+//       headers: { "Content-Type": "multipart/form-data" },
+//     });
+//   },
+//   getRevenueReport: (params) => api.get("/finance/revenue", { params }),
+//   getIncomeSheet: (params) => api.get("/finance/income-sheet", { params }),
+// };
 
 // Invoice APIs
 export const invoiceAPI = {

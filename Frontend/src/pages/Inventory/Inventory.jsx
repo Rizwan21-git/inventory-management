@@ -37,12 +37,9 @@ import { debounce, formatCurrency } from "../../utils/helpers";
 const Inventory = () => {
   const dispatch = useDispatch();
   const location = useLocation();
-  const { items, loading, totalItems } = useSelector(
+  const { items, loading } = useSelector(
     (state) => state.inventory
   );
-  //temporary
-  // const [items, setItems] = useState([]);
-
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -62,7 +59,7 @@ const Inventory = () => {
     notes: "",
     selectedSize: "",
     image: null,
-    sizes: [], // New field for size variants
+    sizes: [],
   });
 
   // Read URL params on mount
@@ -84,13 +81,11 @@ const Inventory = () => {
 
   // Fetch inventory
   useEffect(() => {
+    console.log("useEffect repeated..................")
     dispatch(
-      fetchInventory({
-        search: searchTerm,
-        category: filterCategory,
-      })
+      fetchInventory({})
     );
-  }, [dispatch, searchTerm, filterCategory]);
+  }, [dispatch]);
 
   const handleSearch = debounce((value) => {
     setSearchTerm(value);
@@ -143,7 +138,7 @@ const Inventory = () => {
 
   // Filter logic - centralized and clean
   const getFilteredItems = () => {
-    return items.filter((item) => {
+    return items?.filter((item) => {
       // Search by product name
       const matchesSearch =
         !searchTerm ||
@@ -222,15 +217,12 @@ const Inventory = () => {
 
       if (editingItem) {
         await dispatch(
-          updateInventoryItem({ id: editingItem.id, data: itemData })
+          updateInventoryItem({ id: editingItem._id, data: itemData })
         ).unwrap();
         toast.success("Item updated successfully!");
       } else {
-        // await dispatch(createInventoryItem(itemData)).unwrap();
-        // toast.success("Item added successfully!");
-        console.log(itemData);
-        items.push(itemData)
-        console.log(items)
+        await dispatch(createInventoryItem(itemData)).unwrap();
+        toast.success("Item added successfully!");
       }
       setIsModalOpen(false);
       resetForm();
@@ -296,10 +288,12 @@ const Inventory = () => {
   const filteredItems = getFilteredItems();
 
   // Stats calculations using filtered data
-  const lowStockCount = items.filter(
+  console.log(items);
+  const totalItems = items?.length;
+  const lowStockCount = items?.filter(
     (item) => item.quantity < 10 && item.quantity > 0
   ).length;
-  const outOfStockCount = items.filter((item) => item.quantity === 0).length;
+  const outOfStockCount = items?.filter((item) => item.quantity === 0).length;
 
   // Table columns
   const columns = [
@@ -330,7 +324,6 @@ const Inventory = () => {
     },
     {
       header: "Quantity",
-      // accessor: "quantity",
       render: (row) => (
         <div className="flex items-center gap-2">
           <span
@@ -405,7 +398,7 @@ const Inventory = () => {
             <FiEdit2 size={18} />
           </button>
           <button
-            onClick={() => handleDelete(row.id)}
+            onClick={() => handleDelete(row._id)}
             className="text-danger-600 hover:text-danger-700"
             title="Delete"
           >
