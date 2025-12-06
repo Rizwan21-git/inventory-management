@@ -1,20 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-// import { projectAPI } from "../services/api";
-
-// TEMPORARY: Use mock data until backend is ready
-import mockApi from '../services/mockApi';
-
-// export const fetchProjects = createAsyncThunk(
-//   "project/fetchAll",
-//   async (params = {}) => {
-//     return await projectAPI.getAll(params);
-//   }
-// );
+import { projectAPI } from "../services/api";
 
 export const fetchProjects = createAsyncThunk(
   "project/fetchAll",
-  async (params = {}) => {
-    return await mockApi.getProjects(params);
+  async () => {
+    return await projectAPI.getAll();
   }
 );
 
@@ -31,9 +21,9 @@ export const createProject = createAsyncThunk(
 
 export const updateProject = createAsyncThunk(
   "project/update",
-  async ({ id, data }, { rejectWithValue }) => {
+  async ({ id }, { rejectWithValue }) => {
     try {
-      return await projectAPI.update(id, data);
+      return await projectAPI.update(id);
     } catch (error) {
       return rejectWithValue(error);
     }
@@ -54,8 +44,8 @@ export const assignWorker = createAsyncThunk(
 
 export const updateProjectStatus = createAsyncThunk(
   "project/updateStatus",
-  async ({ id, status }) => {
-    return await projectAPI.updateStatus(id, status);
+  async ({ id, data }) => {
+    return await projectAPI.updateStatus(id, data);
   }
 );
 
@@ -66,9 +56,6 @@ const projectSlice = createSlice({
     currentProject: null,
     loading: false,
     error: null,
-    totalPages: 0,
-    currentPage: 1,
-    totalItems: 0,
   },
   reducers: {
     clearError: (state) => {
@@ -82,10 +69,7 @@ const projectSlice = createSlice({
       })
       .addCase(fetchProjects.fulfilled, (state, action) => {
         state.loading = false;
-        state.projects = action.payload.data.projects;
-        state.totalPages = action.payload.data.totalPages;
-        state.currentPage = action.payload.data.currentPage;
-        state.totalItems = action.payload.data.totalItems;
+        state.projects = action.payload;
       })
       .addCase(fetchProjects.rejected, (state, action) => {
         state.loading = false;

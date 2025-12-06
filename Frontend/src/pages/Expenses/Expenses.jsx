@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { motion } from "framer-motion";
 import {
   FiPlus,
+  FiEye,
   FiEdit2,
   FiTrash2,
   FiPieChart,
@@ -10,7 +12,6 @@ import {
 import {
   fetchExpenses,
   createExpense,
-  updateExpense,
   deleteExpense,
 } from "../../slices/expenseSlice";
 import Card from "../../components/common/Card";
@@ -26,8 +27,8 @@ import { EXPENSE_CATEGORIES } from "../../utils/constants";
 import {
   formatCurrency,
   formatDate,
-  formatPaymentMethodLabel,
 } from "../../utils/helpers";
+import FileUpload from "../../components/common/FileUpload";
 
 const Expenses = () => {
   const dispatch = useDispatch();
@@ -36,15 +37,15 @@ const Expenses = () => {
     console.log(expenses);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingExpense, setEditingExpense] = useState(null);
   const [filterCategory, setFilterCategory] = useState("");
+  const [isViewProofModalOpen, setIsViewProofModalOpen] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [formData, setFormData] = useState({
     expenseName: "",
     category: "",
     amount: "",
-    expenseDate: new Date().toISOString().split("T"),
-    paymentMethod: "",
+    proof: null,
     notes: "",
   });
 
@@ -58,42 +59,51 @@ const Expenses = () => {
       !filterCategory || expense.category === filterCategory;
     const matchesSearch =
       expense.expenseName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      expense.paymentMethod?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       formatCurrency(expense.amount).includes(searchTerm);
     return matchesCategory && matchesSearch;
   });
 
+  const handleImageUpload = (files) => {
+    if (files && files.length > 0) {
+      const file = files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setFormData({ ...formData, proof: e.target.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editingExpense) {
-        await dispatch(
-          updateExpense({ id: editingExpense.id, data: formData })
-        ).unwrap();
-        toast.success("Expense updated successfully!");
-      } else {
+      // if (editingExpense) {
+      //   await dispatch(
+      //     updateExpense({ id: editingExpense._id, data: formData })
+      //   ).unwrap();
+      //   toast.success("Expense updated successfully!");
+      // } else {
+        console.log(formData);
         await dispatch(createExpense(formData)).unwrap();
         toast.success("Expense added successfully!");
-      }
-      setIsModalOpen(false);
-      resetForm();
+      // }
+      // setIsModalOpen(false);
+      // resetForm();
     } catch (error) {
       toast.error(error?.message || "Operation failed");
     }
   };
 
-  const handleEdit = (expense) => {
-    setEditingExpense(expense);
-    setFormData({
-      expenseName: expense.expenseName,
-      category: expense.category,
-      amount: expense.amount,
-      expenseDate: expense.expenseDate,
-      paymentMethod: expense.paymentMethod,
-      notes: expense.notes || "",
-    });
-    setIsModalOpen(true);
-  };
+  // const handleEdit = (expense) => {
+  //   setEditingExpense(expense);
+  //   setFormData({
+  //     expenseName: expense.expenseName,
+  //     category: expense.category,
+  //     amount: expense.amount,
+  //     notes: expense.notes || "",
+  //   });
+  //   setIsModalOpen(true);
+  // };
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this expense?")) {
@@ -106,16 +116,19 @@ const Expenses = () => {
     }
   };
 
+  const handleViewProof = (record) => {
+    setSelectedRecord(record);
+    setIsViewProofModalOpen(true);
+  };
+
   const resetForm = () => {
     setFormData({
       expenseName: "",
       category: "",
       amount: "",
-      expenseDate: new Date().toISOString().split("T"),
-      paymentMethod: "",
+      proof: null,
       notes: "",
     });
-    setEditingExpense(null);
   };
 
   const getCategoryBadge = (category) => {
@@ -148,29 +161,42 @@ const Expenses = () => {
       ),
     },
     {
-      header: "Payment Method",
-      render: (row) => (
-        <span className="capitalize">
-          {formatPaymentMethodLabel(row.paymentMethod)}
-        </span>
-      ),
+      header: "Date",
+      render: (row) => formatDate(row.createdAt),
     },
     {
-      header: "Date",
-      render: (row) => formatDate(row.expenseDate),
+      header: "Proof",
+      render: (row)=>
+        <>
+          {row.proof != null ? (
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                size="sm"
+                variant="outline"
+                icon={FiEye}
+                onClick={() => handleViewProof(row)}
+              >
+                View Proof
+              </Button>
+            </motion.div>
+          ) : (
+            "--"
+          )}
+        </>
+      
     },
     {
       header: "Actions",
       render: (row) => (
         <div className="flex items-center gap-2">
-          <button
+          {/* <button
             onClick={() => handleEdit(row)}
             className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
           >
             <FiEdit2 className="w-4 h-4" />
-          </button>
+          </button> */}
           <button
-            onClick={() => handleDelete(row.id)}
+            onClick={() => handleDelete(row._id)}
             className="p-2 text-danger-600 hover:bg-danger-50 rounded-lg transition-colors"
           >
             <FiTrash2 className="w-4 h-4" />
@@ -198,11 +224,9 @@ const Expenses = () => {
     0
   );
 
-  // if (loading && expenses.length === 0) return <LoadingSpinner fullScreen />;
-
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
             <FiPackage className="text-primary-600" />
@@ -226,6 +250,7 @@ const Expenses = () => {
             resetForm();
             setIsModalOpen(true);
           }}
+          className="w-full md:w-52"
         >
           Add Expense
         </Button>
@@ -274,7 +299,7 @@ const Expenses = () => {
             placeholder="Filter by category..."
           />
           <Input
-            placeholder="Search by expense name or payment method..."
+            placeholder="Search by expense name"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -306,6 +331,41 @@ const Expenses = () => {
           </div>
         )}
       </Card>
+      <Modal
+        isOpen={isViewProofModalOpen}
+        onClose={() => {
+          setIsViewProofModalOpen(false);
+          setSelectedRecord(null);
+        }}
+        title="Payment Proof"
+        size="lg"
+      >
+        {selectedRecord?.proof ? (
+          <div className="space-y-4">
+            <img
+              src={selectedRecord.proof}
+              alt="Payment Proof"
+              className="w-full rounded-lg"
+            />
+            <div className="text-sm text-gray-600">
+              <p>
+                <strong>Name:</strong> {selectedRecord.expenseName}
+              </p>
+              <p>
+                <strong>Amount:</strong>{" "}
+                {formatCurrency(selectedRecord.amount ?? 0)}
+              </p>
+              <p>
+                <strong>Date:</strong> {formatDate(selectedRecord.createdAt)}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <p className="text-gray-500 text-center py-8">
+            No payment proof available
+          </p>
+        )}
+      </Modal>
 
       <Modal
         isOpen={isModalOpen}
@@ -313,7 +373,7 @@ const Expenses = () => {
           setIsModalOpen(false);
           resetForm();
         }}
-        title={editingExpense ? "Edit Expense" : "Add New Expense"}
+        title={"Add New Expense"}
         size="lg"
         footer={
           <>
@@ -326,9 +386,7 @@ const Expenses = () => {
             >
               Cancel
             </Button>
-            <Button onClick={handleSubmit}>
-              {editingExpense ? "Update Expense" : "Add Expense"}
-            </Button>
+            <Button onClick={handleSubmit}>{"Add Expense"}</Button>
           </>
         }
       >
@@ -368,17 +426,7 @@ const Expenses = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Expense Date"
-              type="date"
-              required
-              value={formData.expenseDate}
-              onChange={(e) =>
-                setFormData({ ...formData, expenseDate: e.target.value })
-              }
-            />
-
+          {/* <div className="grid grid-cols-1 gap-4">
             <Select
               label="Payment Method"
               required
@@ -392,6 +440,15 @@ const Expenses = () => {
                 { value: "card", label: "Card" },
                 { value: "cheque", label: "Cheque" },
               ]}
+            />
+          </div> */}
+          <div className="min-w-8">
+            <FileUpload
+              label="Upload Proof"
+              accept="image/*"
+              maxSize={5 * 1024 * 1024}
+              onChange={handleImageUpload}
+              required
             />
           </div>
 

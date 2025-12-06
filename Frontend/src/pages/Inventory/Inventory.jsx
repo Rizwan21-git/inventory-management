@@ -427,13 +427,13 @@ const Inventory = () => {
             </div>
             <Button
               variant="primary"
-              size="lg"
+              size="md"
               icon={FiPlus}
               onClick={() => {
                 resetForm();
                 setIsModalOpen(true);
               }}
-              className="w-full md:w-auto"
+              className="w-full md:w-52"
             >
               Add Product
             </Button>

@@ -5,8 +5,6 @@ import invoiceReducer from "./slices/invoiceSlice";
 import projectReducer from "./slices/projectSlice";
 import expenseReducer from "./slices/expenseSlice";
 import dashboardReducer from "./slices/dashboardSlice";
-import profitReducer from "./slices/profitSlice";
-import revenueReducer from "./slices/revenueSlice";
 import shopReducer from "./slices/shopSlice"
 
 export const store = configureStore({
@@ -17,8 +15,6 @@ export const store = configureStore({
     project: projectReducer,
     expense: expenseReducer,
     dashboard: dashboardReducer,
-    profit: profitReducer,
-    revenue: revenueReducer,
     shops: shopReducer,
   },
   middleware: (getDefaultMiddleware) =>

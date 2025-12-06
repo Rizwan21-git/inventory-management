@@ -33,7 +33,7 @@ const Layout = () => {
 
       <div
         className={`transition-all duration-300 ${
-          sidebarOpen ? "ml-64" : "ml-20"
+          sidebarOpen ? "ml-64" : "ml-16"
         }`}
       >
         <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />

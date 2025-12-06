@@ -20,8 +20,6 @@ import {
   updateInventoryItem,
   updateStock,
 } from "../../slices/inventorySlice";
-import { addProfit } from "../../slices/profitSlice";
-import { addRevenue } from "../../slices/revenueSlice";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
@@ -94,6 +92,7 @@ const Invoice = () => {
 
   // Helper: Calculate line item price (selling and buying)
   const calculateLinePrice = (item) => {
+    console.log(item);
     const product = getSelectedProduct(item.productId);
     if (!product) return { sell: 0, buy: 0, quantity: item.quantity || 1 };
 
@@ -104,12 +103,24 @@ const Invoice = () => {
     if (product.sizes?.length > 0 && item.sizeIdx !== null) {
       const size = product.sizes[item.sizeIdx];
       const area = (size.width * size.length) / 144;
-      sellPrice = area * product.sellingPrice * item.quantity;
-      buyPrice = area * product.buyingPrice * item.quantity;
+      if (item.buyingPrice != "") {
+        sellPrice = area * product.sellingPrice * item.quantity;
+        buyPrice = area * item.buyingPrice * item.quantity;
+      }else{
+        sellPrice = area * product.sellingPrice * item.quantity;
+        buyPrice = area * product.buyingPrice * item.quantity;
+      }
     } else {
+      if (item.buyingPrice != "") {
+        sellPrice = product.sellingPrice * item.quantity;
+        buyPrice = item.buyingPrice * item.quantity;
+      } else {
+        sellPrice = product.sellingPrice * item.quantity;
+        buyPrice = product.buyingPrice * item.quantity;
+      }
       // No sizes, use quantity-based pricing
-      sellPrice = item.quantity * product.sellingPrice;
-      buyPrice = item.quantity * product.buyingPrice;
+      // sellPrice = item.quantity * product.sellingPrice;
+      // buyPrice = item.quantity * product.buyingPrice;
     }
 
     return { sell: sellPrice, buy: buyPrice, quantity: item.quantity };
@@ -333,14 +344,6 @@ const Invoice = () => {
                   0
               );
 
-              // await dispatch(
-              //   addProfit({ id: product._id, profit : itemProfit} )
-              // ).unwrap();
-
-              // await dispatch(
-              //   addRevenue({ id: product._id, revenue : linePrice.sell })
-              // ).unwrap();
-
               return {
                 ...item,
                 productName: product?.name,
@@ -360,17 +363,6 @@ const Invoice = () => {
             await dispatch(
               updateStock({ id: product._id, data: { quantity: newQuantity } })
             ).unwrap();
-
-            // compute profit for this line
-
-            // await dispatch(
-            //   addRevenue({ id: product._id, revenue: linePrice.sellu })
-            // ).unwrap();
-
-            // const itemProfit = Number(linePrice.sell - linePrice.buy || 0);
-            // await dispatch(
-            //   addProfit({ id: product._id, profit: itemProfit })
-            // ).unwrap();
 
             return {
               ...item,
@@ -585,7 +577,7 @@ const Invoice = () => {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex items-center justify-between mb-6"
+        className="grid grid-cols-1 md:grid-cols-2 gap-6"
       >
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
@@ -598,6 +590,7 @@ const Invoice = () => {
         </div>
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           <Button
+            className={"w-full md:w-48 md:float-right"}
             icon={FiPlus}
             onClick={() => {
               dispatch(fetchInventory({}));
@@ -854,7 +847,7 @@ const Invoice = () => {
                             <Input
                               type="number"
                               min="0"
-                              step="0.01"
+                              step="1"
                               value={
                                 item.buyingPrice ?? product?.buyingPrice ?? ""
                               }

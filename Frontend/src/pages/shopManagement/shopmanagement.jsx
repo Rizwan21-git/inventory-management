@@ -392,7 +392,7 @@ const ShopManagement = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
             {selectedShop ? (
@@ -416,7 +416,7 @@ const ShopManagement = () => {
 
         <div className="flex gap-2">
           {selectedShop && (
-            <Button variant="outline" onClick={handleBackToShops}>
+            <Button variant="outline" onClick={handleBackToShops} className={"w-full md:w-52"}>
               Back to Shops
             </Button>
           )}
@@ -431,6 +431,7 @@ const ShopManagement = () => {
                 setIsShopModalOpen(true);
               }
             }}
+            className={"w-full md:w-52"}
           >
             {selectedShop ? "Add Worker" : "Add Shop"}
           </Button>

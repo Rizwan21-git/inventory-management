@@ -21,8 +21,6 @@ import {
   deleteProject,
   updateProjectStatus,
 } from "../../slices/projectSlice";
-import { addProfit } from "../../slices/profitSlice";
-import { addRevenue } from "../../slices/revenueSlice";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
@@ -51,8 +49,6 @@ const Projects = () => {
     customerRequirements: "",
     workerAssigned: "",
     status: "in_progress",
-    startDate: "",
-    endDate: "",
     customerLabourCost: 0,
     workerPayment: 0,
   });
@@ -77,13 +73,13 @@ const Projects = () => {
   const counts = {
     pending: 0,
     in_progress: 0,
-    cancelled: 0,
   };
+
   let totalProfit = 0;
   (projects || []).forEach((p) => {
     const s = p.status;
     if (counts[s] !== undefined) counts[s] += 1;
-    totalProfit += calculateProfit(p.customerLabourCost, p.workerPayment);
+    totalProfit += p.profit;
   });
 
   // Handlers
@@ -101,22 +97,15 @@ const Projects = () => {
     }
 
     try {
-        const profit = formData.customerLabourCost - formData.workerPayment;
-        await dispatch(
-          addRevenue({
-            description: formData.projectName,
-            amount: formData.customerLabourCost,
-          })
-        ).unwrap();
-        await dispatch(
-          addProfit({ 
-            description: formData.projectName, 
-            amount: profit })
-        ).unwrap();
-        await dispatch(createProject(formData)).unwrap();
-        toast.success("Project created successfully!");
-      setIsModalOpen(false);
-      resetForm();
+      const projectData = {
+        ...formData,
+        profit: parseFloat(formData.customerLabourCost || 0) - parseFloat(formData.workerPayment || 0),
+      };
+      console.log(projectData);
+      await dispatch(createProject(projectData)).unwrap();
+      toast.success("Project created successfully!");
+      // setIsModalOpen(false);
+      // resetForm();
     } catch (error) {
       toast.error(error?.message || "Operation failed");
     }
@@ -135,7 +124,9 @@ const Projects = () => {
 
   const handleStatusChange = async (id, newStatus) => {
     try {
-      await dispatch(updateProjectStatus({ id, status: newStatus })).unwrap();
+      await dispatch(
+        updateProjectStatus({ id, data: { status: newStatus } })
+      ).unwrap();
       toast.success("Status updated successfully!");
     } catch (error) {
       toast.error("Failed to update status");
@@ -151,10 +142,9 @@ const Projects = () => {
       customerRequirements: "",
       workerAssigned: "",
       status: "in_progress",
-      startDate: "",
-      endDate: "",
       customerLabourCost: 0,
       workerPayment: 0,
+      profit: 0,
     });
     setEditingProject(null);
   };
@@ -213,7 +203,7 @@ const Projects = () => {
       render: (row) => (
         <select
           value={row.status}
-          onChange={(e) => handleStatusChange(row.id, e.target.value)}
+          onChange={(e) => handleStatusChange(row._id, e.target.value)}
           className="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-primary-500"
         >
           <option value="in_progress">In Progress</option>
@@ -228,7 +218,7 @@ const Projects = () => {
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            onClick={() => handleDelete(row.id)}
+            onClick={() => handleDelete(row._id)}
             className="p-2 text-danger-600 hover:bg-danger-50 rounded-lg transition-colors"
             title="Delete"
           >
@@ -295,7 +285,7 @@ const Projects = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex items-center justify-between"
+          className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
         >
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
@@ -307,7 +297,11 @@ const Projects = () => {
             </p>
           </div>
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button icon={FiPlus} onClick={onNewProject}>
+            <Button
+              icon={FiPlus}
+              onClick={onNewProject}
+              className="w-full md:w-52"
+            >
               New Project
             </Button>
           </motion.div>

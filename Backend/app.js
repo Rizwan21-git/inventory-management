@@ -8,6 +8,8 @@ dotenv.config();
 // Import routes
 import inventoryRoutes from "./routes/inventory.route.js";
 import invoiceRoutes from "./routes/invoice.route.js";
+import projectRoutes from "./routes/project.route.js";
+import expenseRoutes from "./routes/expense.route.js";
 
 
 const app = express();
@@ -22,6 +24,8 @@ app.use(express.urlencoded({ extended: true }));
 // Use routes
 app.use("/inventory", inventoryRoutes);
 app.use("/invoices", invoiceRoutes);
+app.use("/projects", projectRoutes);
+app.use("/expenses", expenseRoutes);
 
 // CORS configuration
 // const corsOptions = {

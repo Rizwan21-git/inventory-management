@@ -1,7 +1,4 @@
-// API Configuration and Service Layer
 import axios from "axios";
-// import { addProfit, getProfit } from "../slices/profitSlice";
-// import { addRevenue } from "../slices/revenueSlice";
 
 const API_BASE_URL =
   import.meta.env.API_BASE_URL || "http://localhost:5000";
@@ -67,16 +64,23 @@ export const invoiceAPI = {
   generatePDF: (id) => api.get(`/invoices/${id}/pdf`, { responseType: "blob" }),
 };
 
+// Expense APIs
+export const expenseAPI = {
+  getAll: ()=> api.get("/expenses"),
+  create: (data)=> api.post("/expenses", data),
+  delete: (id)=> api.delete(`/expenses/${id}`)
+}
+
 // Project APIs
 export const projectAPI = {
-  getAll: (params) => api.get("/projects", { params }),
+  getAll: () => api.get("/projects"),
   getById: (id) => api.get(`/projects/${id}`),
   create: (data) => api.post("/projects", data),
-  update: (id, data) => api.put(`/projects/${id}`, data),
+  // update: (id) => api.patch(`/projects/${id}`),
   delete: (id) => api.delete(`/projects/${id}`),
   assignWorker: (id, workerId) =>
     api.patch(`/projects/${id}/assign`, { workerId }),
-  updateStatus: (id, status) => api.patch(`/projects/${id}/status`, { status }),
+  updateStatus: (id, status) => api.patch(`/projects/${id}`,  status ),
 };
 
 // Dashboard APIs

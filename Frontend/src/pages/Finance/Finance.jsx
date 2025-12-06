@@ -12,7 +12,6 @@ import {
   FiCheckCircle,
 } from "react-icons/fi";
 import { fetchInvoices, updateInvoice } from "../../slices/invoiceSlice";
-import { addRevenue } from "../../slices/revenueSlice";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
@@ -40,7 +39,6 @@ const Finance = () => {
     totalItems,
   } = useSelector((state) => state.invoice);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isViewProofModalOpen, setIsViewProofModalOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
@@ -84,10 +82,6 @@ const Finance = () => {
       // When marking payments as paid, update the underlying invoice and record revenue
       // For selling invoices (bankDirection === 'in'), add positive revenue
       // For buying invoices (bankDirection === 'out'), add investment
-      // const amount = Number(record.total ?? record.amount ?? 0);
-      // if (resolveBankDirection(record) === "in") {
-      //   await dispatch(addRevenue({ id: record._id, amount })).unwrap();
-      // }
 
       // Persist invoice payment status
       await dispatch(

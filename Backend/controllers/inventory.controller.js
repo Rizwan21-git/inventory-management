@@ -8,7 +8,6 @@ export const getAllProducts = asyncHandler(async (req, res, next) => {
 });
 
 export const addProduct = asyncHandler(async (req, res, next) => {
-  console.log(req.body);
   const {
     name,
     category,

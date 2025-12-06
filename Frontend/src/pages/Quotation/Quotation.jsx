@@ -18,8 +18,6 @@ import {
   fetchInventory,
   updateInventoryItem,
 } from "../../slices/inventorySlice";
-import { addProfit } from "../../slices/profitSlice";
-import { addRevenue } from "../../slices/revenueSlice";
 import Card from "../../components/common/Card";
 import Table from "../../components/common/Table";
 import Badge from "../../components/common/Badge";
@@ -110,20 +108,6 @@ const Quotation = () => {
                 data: { quantity: newQuantity },
               })
             ).unwrap();
-
-            // Calculate profit (selling price - buying price per unit)
-            // const lineProfit =
-            //   (item.lineTotal || 0) - item.quantity * (product.buyingPrice || 0);
-
-            // Record profit
-            // await dispatch(
-            //   addProfit({ id: product._id, amount: lineProfit })
-            // ).unwrap();
-
-            // // Record revenue
-            // await dispatch(
-            //   addRevenue({ id: product._id, amount: item.lineTotal || 0 })
-            // ).unwrap();
           })
         );
 
