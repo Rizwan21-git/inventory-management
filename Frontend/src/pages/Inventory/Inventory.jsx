@@ -28,18 +28,13 @@ import Badge from "../../components/common/Badge";
 import FileUpload from "../../components/common/FileUpload";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import { toast } from "react-hot-toast";
-import {
-  PRODUCT_CATEGORIES,
-  PRODUCT_CONDITIONS,
-} from "../../utils/constants";
+import { PRODUCT_CATEGORIES, PRODUCT_CONDITIONS } from "../../utils/constants";
 import { debounce, formatCurrency } from "../../utils/helpers";
 
 const Inventory = () => {
   const dispatch = useDispatch();
   const location = useLocation();
-  const { items, loading } = useSelector(
-    (state) => state.inventory
-  );
+  const { items, loading } = useSelector((state) => state.inventory);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -81,10 +76,7 @@ const Inventory = () => {
 
   // Fetch inventory
   useEffect(() => {
-    console.log("useEffect repeated..................")
-    dispatch(
-      fetchInventory({})
-    );
+    dispatch(fetchInventory({}));
   }, [dispatch]);
 
   const handleSearch = debounce((value) => {
@@ -286,9 +278,10 @@ const Inventory = () => {
 
   // Get filtered items
   const filteredItems = getFilteredItems();
-
+  
+  // console.log(items[1].image);
+  
   // Stats calculations using filtered data
-  console.log(items);
   const totalItems = items?.length;
   const lowStockCount = items?.filter(
     (item) => item.quantity < 10 && item.quantity > 0
@@ -303,12 +296,12 @@ const Inventory = () => {
       render: (row) => (
         <div className="flex flex-col items-center gap-1 min-w-[110px]">
           {row.image && (
-          <img
-            src={row.image}
-            alt={row.name}
-            className="w-24 h-24 rounded object-cover border border-gray-200 mb-1"
-          />
-         )}
+            <img
+              src={row.image}
+              alt={row.name}
+              className="w-24 h-24 rounded object-cover border border-gray-200 mb-1"
+            />
+          )}
           <span className="font-semibold text-gray-900 text-center">
             {row.name}
           </span>
@@ -350,14 +343,17 @@ const Inventory = () => {
     {
       header: "Profit Margin",
       render: (row) => (
-        <span className="font-semibold text-success-600">
-          {Number(
-            (((Number(row.sellingPrice) - Number(row.buyingPrice)) /
-              Number(row.buyingPrice)) *
-              100).toFixed(2)
+        <>
+          {row.profitMargin < 0 ? (
+            <span className="font-semibold text-danger-600">
+              {row.profitMargin}%
+            </span>
+          ) : (
+            <span className="font-semibold text-success-600">
+              {row.profitMargin}%
+            </span>
           )}
-          %
-        </span>
+        </>
       ),
     },
     {
@@ -695,11 +691,21 @@ const Inventory = () => {
           </div>
 
           {formData.buyingPrice && formData.sellingPrice && (
-            <div className="p-3 bg-success-50 border border-success-200 rounded-lg">
-              <p className="text-sm text-success-700">
-                <strong>Profit Margin:</strong> {calculateMargin()}%
-              </p>
-            </div>
+            <>
+              {calculateMargin() < 0 ? (
+                <div className="p-3 bg-danger-50 border border-danger-200 rounded-lg">
+                  <p className="text-sm text-danger-700">
+                    <strong>Profit Margin: {calculateMargin()}</strong>%
+                  </p>
+                </div>
+              ) : (
+                <div className="p-3 bg-success-50 border border-success-200 rounded-lg">
+                  <p className="text-sm text-success-700">
+                    <strong>Profit Margin: {calculateMargin()}%</strong>%
+                  </p>
+                </div>
+              )}
+            </>
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">

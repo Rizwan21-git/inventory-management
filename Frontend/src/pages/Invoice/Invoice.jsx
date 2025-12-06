@@ -18,6 +18,7 @@ import {
 import {
   fetchInventory,
   updateInventoryItem,
+  updateStock,
 } from "../../slices/inventorySlice";
 import { addProfit } from "../../slices/profitSlice";
 import { addRevenue } from "../../slices/revenueSlice";
@@ -50,9 +51,6 @@ const Invoice = () => {
     (state) => state.invoice
   );
   const { items: inventoryItems } = useSelector((state) => state.inventory);
-
-  //temporary
-  // const [invoices] = useState([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [lossWarning, setLossWarning] = useState(false);
@@ -139,6 +137,12 @@ const Invoice = () => {
 
     // Check for loss
     const isInLoss = total < subtotalBuy;
+    const profit =
+      formData.invoiceType !== INVOICE_TYPES.BUYING
+        ? INVOICE_TYPES.DROPSHIPPING
+          ? total - subtotalBuy - Number(formData.shippingCost)
+          : total - subtotalBuy
+        : 0;
 
     return {
       subtotalSell,
@@ -147,6 +151,7 @@ const Invoice = () => {
       taxAmount,
       discountAmount,
       total,
+      profit,
       isInLoss,
     };
   };
@@ -257,6 +262,7 @@ const Invoice = () => {
         tax: totals.taxAmount,
         discount: totals.discountAmount,
         total: totals.total,
+        profit: totals.profit,
         // For quotations, clear payment-related fields since they are not applicable
         ...(formData.invoiceType === INVOICE_TYPES.QUOTATION && {
           paymentStatus: null,
@@ -270,6 +276,14 @@ const Invoice = () => {
 
             // For quotations, skip inventory and profit/revenue updates
             if (formData.invoiceType === INVOICE_TYPES.QUOTATION) {
+              const newQuantity =
+                (product.quantity || 0) - Number(item.quantity || 0);
+              await dispatch(
+                updateStock({
+                  id: product._id,
+                  data: { quantity: newQuantity },
+                })
+              ).unwrap();
               return {
                 ...item,
                 productName: product?.name,
@@ -287,12 +301,10 @@ const Invoice = () => {
               // Increase inventory quantity
               const newQuantity =
                 (product.quantity || 0) + Number(item.quantity || 0);
-              const updateData = { quantity: newQuantity };
-
               await dispatch(
-                updateInventoryItem({
-                  id: product.id || product._id,
-                  data: updateData,
+                updateStock({
+                  id: product._id,
+                  data: { quantity: newQuantity },
                 })
               ).unwrap();
 
@@ -321,13 +333,13 @@ const Invoice = () => {
                   0
               );
 
-              await dispatch(
-                addProfit({ id: product._id, amount: itemProfit })
-              ).unwrap();
+              // await dispatch(
+              //   addProfit({ id: product._id, profit : itemProfit} )
+              // ).unwrap();
 
-              await dispatch(
-                addRevenue({ id: product._id, amount: linePrice.sell })
-              ).unwrap();
+              // await dispatch(
+              //   addRevenue({ id: product._id, revenue : linePrice.sell })
+              // ).unwrap();
 
               return {
                 ...item,
@@ -346,24 +358,19 @@ const Invoice = () => {
             // compute new inventory quantity and persist it
             const newQuantity = (product.quantity || 0) - item.quantity;
             await dispatch(
-              updateInventoryItem({
-                id: product.id || product._id,
-                data: { quantity: newQuantity },
-              })
+              updateStock({ id: product._id, data: { quantity: newQuantity } })
             ).unwrap();
 
             // compute profit for this line
-            const itemProfit = Number(linePrice.sell - linePrice.buy || 0);
 
-            // add profit record (attach item name)
-            await dispatch(
-              addProfit({ id: product._id, amount: itemProfit })
-            ).unwrap();
+            // await dispatch(
+            //   addRevenue({ id: product._id, revenue: linePrice.sellu })
+            // ).unwrap();
 
-            // add revenue record (line total)
-            await dispatch(
-              addRevenue({ id: product._id, amount: linePrice.sell })
-            ).unwrap();
+            // const itemProfit = Number(linePrice.sell - linePrice.buy || 0);
+            // await dispatch(
+            //   addProfit({ id: product._id, profit: itemProfit })
+            // ).unwrap();
 
             return {
               ...item,
@@ -384,12 +391,11 @@ const Invoice = () => {
           })
         ),
       };
+      console.log(invoiceData);
       await dispatch(createInvoice(invoiceData)).unwrap();
       toast.success("Invoice created successfully!");
-      // invoices.push(invoiceData);
-      // console.log(invoices);
-      setIsModalOpen(false);
-      resetForm();
+      // setIsModalOpen(false);
+      // resetForm();
     } catch (error) {
       toast.error(error?.message || "Failed to create invoice");
     }
@@ -498,7 +504,7 @@ const Invoice = () => {
     },
     {
       header: "Date",
-      render: (row) => formatDate(row.date),
+      render: (row) => formatDate(row.createdAt),
     },
     {
       header: "Actions",
@@ -531,7 +537,7 @@ const Invoice = () => {
           >
             <FiPrinter className="w-4 h-4" />
           </motion.button>
-          <motion.button
+          {/* <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => handleDelete(row.id)}
@@ -539,7 +545,7 @@ const Invoice = () => {
             title="Delete"
           >
             <FiTrash2 className="w-4 h-4" />
-          </motion.button>
+          </motion.button> */}
         </div>
       ),
     },
@@ -760,7 +766,7 @@ const Invoice = () => {
                     animate={{ opacity: 1, y: 0 }}
                     className="bg-gray-50 p-4 rounded-lg border border-gray-200"
                   >
-                    {isOutOfStock && formData.invoiceType === "selling" && (
+                    {isOutOfStock && formData.invoiceType !== "buying" && (
                       <div className="mb-3 flex items-center gap-2 p-2 bg-danger-50 rounded text-danger-700 text-sm">
                         <FiAlertCircle className="w-4 h-4" />
                         <span>This product is out of stock</span>
@@ -768,7 +774,7 @@ const Invoice = () => {
                     )}
 
                     {/* Low Stock Alert */}
-                    {lessQuantity && formData?.invoiceType === "selling" && (
+                    {lessQuantity && formData?.invoiceType !== "buying" && (
                       <div className="mb-3 flex items-center gap-2 p-2 bg-danger-50 rounded text-danger-700 text-sm">
                         <FiAlertCircle className="w-4 h-4" />
                         <span>
@@ -795,9 +801,9 @@ const Invoice = () => {
 
                       {/* Size Select (conditional) */}
                       {hasSizes &&
-                        (formData?.invoiceType === "selling" ||
-                          formData?.invoiceType ===
-                            INVOICE_TYPES.DROPSHIPPING) && (
+                        // (formData?.invoiceType === "selling" ||
+                        //   formData?.invoiceType ===
+                        //     INVOICE_TYPES.DROPSHIPPING) && (
                           <div>
                             <Select
                               label="Size (W x L)"
@@ -818,7 +824,8 @@ const Invoice = () => {
                               }))}
                             />
                           </div>
-                        )}
+                        // )
+                        }
 
                       <div>
                         <Input

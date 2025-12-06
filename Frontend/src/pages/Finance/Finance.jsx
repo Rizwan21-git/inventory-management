@@ -62,8 +62,8 @@ const Finance = () => {
     (inv.invoiceType === INVOICE_TYPES.BUYING ? "out" : "in");
 
   useEffect(() => {
-    dispatch(fetchInvoices({ search: searchTerm }));
-  }, [dispatch, searchTerm]);
+    dispatch(fetchInvoices());
+  }, [dispatch]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -84,14 +84,14 @@ const Finance = () => {
       // When marking payments as paid, update the underlying invoice and record revenue
       // For selling invoices (bankDirection === 'in'), add positive revenue
       // For buying invoices (bankDirection === 'out'), add investment
-      const amount = Number(record.total ?? record.amount ?? 0);
-      if (resolveBankDirection(record) === "in") {
-        await dispatch(addRevenue({ id: record._id, amount })).unwrap();
-      }
+      // const amount = Number(record.total ?? record.amount ?? 0);
+      // if (resolveBankDirection(record) === "in") {
+      //   await dispatch(addRevenue({ id: record._id, amount })).unwrap();
+      // }
 
       // Persist invoice payment status
       await dispatch(
-        updateInvoice({ id: record.id, data: { paymentStatus: "paid" } })
+        updateInvoice({ id: record._id, data: { paymentStatus: "paid" } })
       ).unwrap();
       toast.success("Payment marked as paid!");
     } catch (error) {
@@ -193,7 +193,7 @@ const Finance = () => {
           {/* Upload/View Proof - only for non-cash payments */}
           {String(row.bankUsed || "").toUpperCase() !== "CASH" && (
             <>
-              {row.paymentStatus === "pending" ? (
+              {row.paymentProof === null ? (
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -506,16 +506,16 @@ const Finance = () => {
             />
             <div className="text-sm text-gray-600">
               <p>
-                <strong>Customer:</strong> {selectedRecord.customerName}
+                <strong>Name:</strong> {selectedRecord.name}
               </p>
               <p>
                 <strong>Amount:</strong>{" "}
                 {formatCurrency(
-                  selectedRecord.total ?? selectedRecord.amount ?? 0
+                  selectedRecord.total ?? 0
                 )}
               </p>
               <p>
-                <strong>Date:</strong> {formatDate(selectedRecord.dueDate)}
+                <strong>Date:</strong> {formatDate(selectedRecord.createdAt)}
               </p>
             </div>
           </div>

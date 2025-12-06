@@ -128,35 +128,35 @@ const Dropshipping = () => {
       header: "Supplier",
       render: (row) => row.supplierName || "N/A",
     },
-    {
-      header: "Buy Price",
-      render: (row) => {
-        const prices = calculateInvoicePrices(row);
-        return (
-          <span className="font-medium text-gray-900">
-            {formatCurrency(prices.buyPrice)}
-          </span>
-        );
-      },
-    },
-    {
-      header: "Sell Price",
-      render: (row) => {
-        const prices = calculateInvoicePrices(row);
-        return (
-          <span className="font-semibold text-primary-600">
-            {formatCurrency(prices.sellPrice)}
-          </span>
-        );
-      },
-    },
+    // {
+    //   header: "Buy Price",
+    //   render: (row) => {
+    //     const prices = calculateInvoicePrices(row);
+    //     return (
+    //       <span className="font-medium text-gray-900">
+    //         {formatCurrency(prices.buyPrice)}
+    //       </span>
+    //     );
+    //   },
+    // },
+    // {
+    //   header: "Sell Price",
+    //   render: (row) => {
+    //     const prices = calculateInvoicePrices(row);
+    //     return (
+    //       <span className="font-semibold text-primary-600">
+    //         {formatCurrency(prices.sellPrice)}
+    //       </span>
+    //     );
+    //   },
+    // },
     {
       header: "Shipping",
       render: (row) => {
-        const prices = calculateInvoicePrices(row);
+        // const prices = calculateInvoicePrices(row);
         return (
           <span className="font-medium text-gray-900">
-            {formatCurrency(prices.shippingCost)}
+            {formatCurrency(row.shippingCost)}
           </span>
         );
       },
@@ -164,14 +164,14 @@ const Dropshipping = () => {
     {
       header: "Profit",
       render: (row) => {
-        const prices = calculateInvoicePrices(row);
+        // const prices = calculateInvoicePrices(row);
         return (
           <span
             className={`font-bold ${
-              prices.profit >= 0 ? "text-success-600" : "text-danger-600"
+              row.profit >= 0 ? "text-success-600" : "text-danger-600"
             }`}
           >
-            {formatCurrency(prices.profit)}
+            {formatCurrency(row.profit)}
           </span>
         );
       },
@@ -186,7 +186,7 @@ const Dropshipping = () => {
     },
     {
       header: "Date",
-      render: (row) => formatDate(row.date),
+      render: (row) => formatDate(row.createdAt),
     },
     {
       header: "Actions",
@@ -215,13 +215,13 @@ const Dropshipping = () => {
           </button>
 
           {/* Delete */}
-          <button
+          {/* <button
             onClick={() => handleDelete(row.id)}
             className="p-2 text-danger-600 hover:bg-danger-50 rounded-lg transition-colors"
             title="Delete"
           >
             <FiTrash2 className="w-4 h-4" />
-          </button>
+          </button> */}
         </div>
       ),
     },
@@ -230,12 +230,12 @@ const Dropshipping = () => {
   // Calculate totals
   const totalOrders = filteredInvoices.length;
   const totalSellRevenue = filteredInvoices.reduce((sum, inv) => {
-    const prices = calculateInvoicePrices(inv);
-    return sum + prices.sellPrice;
+    // const prices = calculateInvoicePrices(inv);
+    return sum + inv.total;
   }, 0);
   const totalProfit = filteredInvoices.reduce((sum, inv) => {
-    const prices = calculateInvoicePrices(inv);
-    return sum + prices.profit;
+    // const prices = calculateInvoicePrices(inv);
+    return sum + inv.profit;
   }, 0);
 
   return (

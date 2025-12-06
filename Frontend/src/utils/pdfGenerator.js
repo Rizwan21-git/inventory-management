@@ -41,7 +41,7 @@ export const generateInvoicePDF = (invoice) => {
   doc.setFontSize(10);
   doc.setFont(undefined, "normal");
   doc.text(`Invoice #: ${invoice.invoiceNumber}`, 14, 65);
-  doc.text(`Date: ${formatDate(invoice.date)}`, 14, 71);
+  doc.text(`Date: ${formatDate(invoice.createdAt)}`, 14, 71);
 
   // Bill To or Supplier (left side)
   doc.setFont(undefined, "bold");

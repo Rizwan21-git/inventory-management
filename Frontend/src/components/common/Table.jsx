@@ -48,7 +48,7 @@ const Table = ({
         <tbody className="bg-white divide-y divide-gray-200">
           {data.map((row, rowIndex) => (
             <motion.tr
-              key={row.id || rowIndex}
+              key={row._id || rowIndex}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: rowIndex * 0.05 }}

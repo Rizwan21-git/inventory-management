@@ -1,22 +1,22 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-// import { invoiceAPI } from '../services/api';
+import { invoiceAPI } from '../services/api';
 
 // TEMPORARY: Use mock data until backend is ready
-import mockApi from '../services/mockApi';
-
-// export const fetchInvoices = createAsyncThunk(
-//   'invoice/fetchAll',
-//   async (params = {}) => {
-//     return await invoiceAPI.getAll(params);
-//   }
-// );
+// import mockApi from '../services/mockApi';
 
 export const fetchInvoices = createAsyncThunk(
   'invoice/fetchAll',
-  async () => {
-    return await mockApi.getInvoices();
+  async (params = {}) => {
+    return await invoiceAPI.getAll(params);
   }
 );
+
+// export const fetchInvoices = createAsyncThunk(
+//   'invoice/fetchAll',
+//   async () => {
+//     return await mockApi.getInvoices();
+//   }
+// );
 
 export const fetchInvoiceById = createAsyncThunk(
   'invoice/fetchById',
@@ -62,7 +62,7 @@ const invoiceSlice = createSlice({
     currentInvoice: null,
     loading: false,
     error: null,
-    totalItems: 0,
+    // totalItems: 0,
   },
   reducers: {
     clearCurrentInvoice: (state) => {
@@ -79,8 +79,8 @@ const invoiceSlice = createSlice({
       })
       .addCase(fetchInvoices.fulfilled, (state, action) => {
         state.loading = false;
-        state.invoices = action.payload.data.invoices;
-        state.totalItems = action.payload.data.totalItems;
+        state.invoices = action.payload;
+        // state.totalItems = action.payload.data.totalItems;
       })
       .addCase(fetchInvoices.rejected, (state, action) => {
         state.loading = false;
@@ -90,7 +90,8 @@ const invoiceSlice = createSlice({
         state.currentInvoice = action.payload;
       })
       .addCase(createInvoice.fulfilled, (state, action) => {
-        state.invoices.unshift(action.payload);
+        // state.invoices.unshift(action.payload);
+        console.log(state.payload);
       })
       .addCase(updateInvoice.fulfilled, (state, action) => {
         const index = state.invoices.findIndex(i => i.id === action.payload.id);

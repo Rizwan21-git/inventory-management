@@ -13,7 +13,7 @@ import {
   FiHome,
 } from "react-icons/fi";
 import { fetchDashboardStats, fetchAvailableYears } from "../../slices/dashboardSlice";
-import { fetchLowStock } from "../../slices/inventorySlice";
+// import { fetchLowStock } from "../../slices/inventorySlice";
 import { fetchInvoices } from "../../slices/invoiceSlice";
 import Card from "../../components/common/Card";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
@@ -27,8 +27,7 @@ const Dashboard = () => {
   // const { pendingPayments } = useSelector((state) => state.finance);
 
   // available years come directly from API (only show years available in DB)
-  const availableYears =
-    useSelector((state) => state.dashboard.availableYears) || [];
+  const availableYears = useSelector((state) => state.dashboard.availableYears) || [];
 
   // UI state for KPI time selection
   const [timeRange, setTimeRange] = useState({
@@ -42,7 +41,7 @@ const Dashboard = () => {
     const year = new Date().getFullYear();
     dispatch(fetchDashboardStats({ period: "this_year", year }));
     dispatch(fetchAvailableYears());
-    dispatch(fetchLowStock());
+    // dispatch(fetchLowStock());
     // pending payments should come from invoices (finance DB usage removed)
     dispatch(fetchInvoices());
   }, [dispatch]);
@@ -295,7 +294,7 @@ const Dashboard = () => {
 
       {/* Alerts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Low Stock Alert - Clickable */}
+        {/* Low Stock Alert */}
         {lowStockItems?.length > 0 && (
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -316,7 +315,7 @@ const Dashboard = () => {
                 <div className="space-y-3 max-h-64 overflow-y-auto custom-scrollbar">
                   {lowStockItems.map((item) => (
                     <motion.div
-                      key={item.id}
+                      key={item._id}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       whileHover={{ x: 5 }}

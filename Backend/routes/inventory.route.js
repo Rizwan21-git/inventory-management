@@ -1,14 +1,14 @@
 import express from "express";
-const inventoryRouter = express.Router();
 
-import { getAllProducts, deleteProduct, updateProduct, addProduct, updatedData } from "../controllers/inventory.controller.js";
+const inventoryRoutes = express.Router();
+
+import { getAllProducts, deleteProduct, updateProduct, addProduct, updateStock } from "../controllers/inventory.controller.js";
 
 // Route to get all products
-inventoryRouter.get("/inventory", getAllProducts);
-inventoryRouter.post("/inventory", addProduct);
-inventoryRouter.put("/inventory/:id", updateProduct);
-inventoryRouter.delete("/inventory/:id", deleteProduct);
-inventoryRouter.patch("/inventory/:id", updatedData);
+inventoryRoutes.post("/", addProduct);
+inventoryRoutes.get("/", getAllProducts);
+inventoryRoutes.put("/:id", updateProduct);
+inventoryRoutes.delete("/:id", deleteProduct);
+inventoryRoutes.patch("/:id/stock", updateStock);
 
-export default inventoryRouter;
-  
+export default inventoryRoutes;

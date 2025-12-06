@@ -23,7 +23,7 @@ const Investment = () => {
   const filteredInvestments = investments.filter(
     (investment) =>
       investment.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      investment.bankUsed?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      // investment.bankUsed?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       formatCurrency(investment.total)?.includes(searchTerm)
   );
 
@@ -44,12 +44,16 @@ const Investment = () => {
       ),
     },
     {
-      header: "payment mathod",
-      render: (row) => <span className="capitalize">{row.bankUsed}</span>,
+      header: "Phone",
+      render: (row) => <span className="capitalize">{row.phoneNumber}</span>,
+    },
+    {
+      header: "Address",
+      render: (row) => <span className="capitalize">{row.address}</span>,
     },
     {
       header: "Date",
-      render: (row) => formatDate(row.date),
+      render: (row) => formatDate(row.createdAt),
     },
   ];
 
@@ -70,7 +74,7 @@ const Investment = () => {
       <Card>
         <div className="mb-4">
           <Input
-            placeholder="Search by supplier name or payment method..."
+            placeholder="Search by supplier name"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />

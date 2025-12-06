@@ -84,7 +84,7 @@ const Quotation = () => {
 
   // Accept quotation - convert to selling invoice
   const handleAcceptQuotation = async (quotationId) => {
-    const quotation = quotations.find((qt) => qt.id === quotationId);
+    const quotation = quotations.find((qt) => qt._id === quotationId);
     if (!quotation) {
       toast.error("Quotation not found");
       return;
@@ -106,24 +106,24 @@ const Quotation = () => {
             const newQuantity = (product.quantity || 0) - item.quantity;
             await dispatch(
               updateInventoryItem({
-                id: product.id || product._id,
+                id: product._id,
                 data: { quantity: newQuantity },
               })
             ).unwrap();
 
             // Calculate profit (selling price - buying price per unit)
-            const lineProfit =
-              (item.lineTotal || 0) - item.quantity * (product.buyingPrice || 0);
+            // const lineProfit =
+            //   (item.lineTotal || 0) - item.quantity * (product.buyingPrice || 0);
 
             // Record profit
-            await dispatch(
-              addProfit({ id: product._id, amount: lineProfit })
-            ).unwrap();
+            // await dispatch(
+            //   addProfit({ id: product._id, amount: lineProfit })
+            // ).unwrap();
 
-            // Record revenue
-            await dispatch(
-              addRevenue({ id: product._id, amount: item.lineTotal || 0 })
-            ).unwrap();
+            // // Record revenue
+            // await dispatch(
+            //   addRevenue({ id: product._id, amount: item.lineTotal || 0 })
+            // ).unwrap();
           })
         );
 
@@ -160,9 +160,9 @@ const Quotation = () => {
     }
   };
 
-  const getStatusBadge = (status) => {
-    return <Badge variant="warning">PENDING</Badge>;
-  };
+  // const getStatusBadge = (status) => {
+  //   return <Badge variant="warning">PENDING</Badge>;
+  // };
 
   const columns = [
     { header: "Quotation #", accessor: "invoiceNumber" },
@@ -176,13 +176,13 @@ const Quotation = () => {
         <span className="font-semibold">{formatCurrency(row.total)}</span>
       ),
     },
-    {
-      header: "Status",
-      render: (row) => getStatusBadge(row.invoiceType),
-    },
+    // {
+    //   header: "Status",
+    //   render: (row) => getStatusBadge(row.invoiceType),
+    // },
     {
       header: "Date",
-      render: (row) => formatDate(row.date),
+      render: (row) => formatDate(row.createdAt),
     },
     {
       header: "Actions",
@@ -220,7 +220,7 @@ const Quotation = () => {
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            onClick={() => handleAcceptQuotation(row.id)}
+            onClick={() => handleAcceptQuotation(row._id)}
             className="p-2 text-success-600 hover:bg-success-50 rounded-lg transition-colors"
             title="Accept Quotation"
           >
@@ -231,7 +231,7 @@ const Quotation = () => {
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            onClick={() => handleRejectQuotation(row.id)}
+            onClick={() => handleRejectQuotation(row._id)}
             className="p-2 text-danger-600 hover:bg-danger-50 rounded-lg transition-colors"
             title="Reject Quotation"
           >

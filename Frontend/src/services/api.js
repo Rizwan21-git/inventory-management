@@ -54,34 +54,15 @@ export const inventoryAPI = {
   create: (data) => api.post("/inventory", data),
   update: (id, data) => api.put(`/inventory/${id}`, data),
   delete: (id) => api.delete(`/inventory/${id}`),
-  updateStock: (id, quantity) => api.patch(`/inventory/${id}/stock`, quantity),
+  updateStock: (id, data) => api.patch(`/inventory/${id}/stock`, data),
 };
-
-// Finance APIs
-// export const financeAPI = {
-//   getAll: (params) => api.get("/finance", { params }),
-//   getById: (id) => api.get(`/finance/${id}`),
-//   create: (data) => api.post("/finance", data),
-//   update: (id, data) => api.put(`/finance/${id}`, data),
-//   delete: (id) => api.delete(`/finance/${id}`),
-//   getPendingPayments: () => api.get("/finance/pending"),
-//   uploadPaymentProof: (id, file) => {
-//     const formData = new FormData();
-//     formData.append("file", file);
-//     return api.post(`/finance/${id}/upload-proof`, formData, {
-//       headers: { "Content-Type": "multipart/form-data" },
-//     });
-//   },
-//   getRevenueReport: (params) => api.get("/finance/revenue", { params }),
-//   getIncomeSheet: (params) => api.get("/finance/income-sheet", { params }),
-// };
 
 // Invoice APIs
 export const invoiceAPI = {
   getAll: (params) => api.get("/invoices", { params }),
   getById: (id) => api.get(`/invoices/${id}`),
   create: (data) => api.post("/invoices", data),
-  update: (id, data) => api.put(`/invoices/${id}`, data),
+  update: (id, data) => api.patch(`/invoices/${id}`, data),
   delete: (id) => api.delete(`/invoices/${id}`),
   generatePDF: (id) => api.get(`/invoices/${id}/pdf`, { responseType: "blob" }),
 };
@@ -98,53 +79,11 @@ export const projectAPI = {
   updateStatus: (id, status) => api.patch(`/projects/${id}/status`, { status }),
 };
 
-// Dropshipping APIs
-export const dropshippingAPI = {
-  getAll: (params) => api.get("/dropshipping", { params }),
-  getById: (id) => api.get(`/dropshipping/${id}`),
-  create: (data) => api.post("/dropshipping", data),
-  update: (id, data) => api.put(`/dropshipping/${id}`, data),
-  delete: (id) => api.delete(`/dropshipping/${id}`),
-  fulfillOrder: (id) => api.patch(`/dropshipping/${id}/fulfill`),
-};
-
-// Investment APIs
-export const investmentAPI = {
-  getAll: (params) => api.get("/investments", { params }),
-  getById: (id) => api.get(`/investments/${id}`),
-  create: (data) => api.post("/investments", data),
-  update: (id, data) => api.put(`/investments/${id}`, data),
-  delete: (id) => api.delete(`/investments/${id}`),
-  getROI: (id) => api.get(`/investments/${id}/roi`),
-};
-
-// Expense APIs
-export const expenseAPI = {
-  getAll: (params) => api.get("/expenses", { params }),
-  getById: (id) => api.get(`/expenses/${id}`),
-  create: (data) => api.post("/expenses", data),
-  update: (id, data) => api.put(`/expenses/${id}`, data),
-  delete: (id) => api.delete(`/expenses/${id}`),
-  getByCategory: (category) => api.get(`/expenses/category/${category}`),
-};
-
 // Dashboard APIs
 export const dashboardAPI = {
   getStats: (params) => api.get("/dashboard/stats", { params }),
   getRecentActivity: () => api.get("/dashboard/activity"),
   getAvailableYears: () => api.get("/dashboard/years"),
-};
-
-// profit APIs
-export const profitAPI = {
-  getProfit: () => api.get("/profit"),
-  addProfit: (data) => api.post("/profit", data),
-};
-
-// revenue APIs
-export const revenueAPI = {
-  getRevenue: () => api.get("/revenue"),
-  addRevenue: (data) => api.post("/revenue", data),
 };
 
 export const shopAPI = {
