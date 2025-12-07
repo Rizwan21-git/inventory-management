@@ -53,7 +53,7 @@ const Inventory = () => {
     condition: "new",
     notes: "",
     selectedSize: "",
-    image: null,
+    // image: null,
     sizes: [],
   });
 
@@ -84,19 +84,19 @@ const Inventory = () => {
   }, 300);
 
   // Handle image upload
-  const handleImageUpload = (files) => {
-    if (files && files.length > 0) {
-      const file = files[0];
-      setImageFile(file);
+  // const handleImageUpload = (files) => {
+  //   if (files && files.length > 0) {
+  //     const file = files[0];
+  //     setImageFile(file);
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setPreviewImage(e.target.result);
-        setFormData({ ...formData, image: e.target.result });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  //     const reader = new FileReader();
+  //     reader.onload = (e) => {
+  //       setPreviewImage(e.target.result);
+  //       setFormData({ ...formData, image: e.target.result });
+  //     };
+  //     reader.readAsDataURL(file);
+  //   }
+  // };
 
   // Calculate profit margin
   const calculateMargin = () => {
@@ -234,7 +234,7 @@ const Inventory = () => {
       condition: item.condition,
       notes: item.notes || "",
       selectedSize: item.selectedSize || "",
-      image: item.image || null,
+      // image: item.image || null,
       sizes: item.sizes || [],
     });
     if (item.image) {
@@ -262,7 +262,7 @@ const Inventory = () => {
       buyingPrice: "",
       sellingPrice: "",
       condition: "new",
-      image: null,
+      // image: null,
       sizes: [],
     });
     setPreviewImage(null);
@@ -295,13 +295,13 @@ const Inventory = () => {
       accessor: "name",
       render: (row) => (
         <div className="flex flex-col items-center gap-1 min-w-[110px]">
-          {row.image && (
+          {/* {row.image && (
             <img
               src={row.image}
               alt={row.name}
               className="w-24 h-24 rounded object-cover border border-gray-200 mb-1"
             />
-          )}
+          )} */}
           <span className="font-semibold text-gray-900 text-center">
             {row.name}
           </span>
@@ -723,7 +723,7 @@ const Inventory = () => {
               )}
             />
 
-            <div className="min-w-8">
+            {/* <div className="min-w-8">
               {!previewImage ? (
                 <FileUpload
                   label="Upload Product Image"
@@ -752,7 +752,7 @@ const Inventory = () => {
                   </button>
                 </div>
               )}
-            </div>
+            </div> */}
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">

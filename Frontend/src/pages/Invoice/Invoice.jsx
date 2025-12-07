@@ -45,7 +45,7 @@ import FileUpload from "../../components/common/FileUpload";
 
 const Invoice = () => {
   const dispatch = useDispatch();
-  const { invoices, loading, totalItems } = useSelector(
+  const { invoices, loading, trigger } = useSelector(
     (state) => state.invoice
   );
   const { items: inventoryItems } = useSelector((state) => state.inventory);
@@ -73,7 +73,8 @@ const Invoice = () => {
   // Fetch invoices on component mount
   useEffect(() => {
     dispatch(fetchInvoices());
-  }, [dispatch]);
+  }, []);
+  console.log(trigger);
 
   // Filter invoices based on search term
   const filteredInvoices = invoices.filter(
@@ -383,11 +384,10 @@ const Invoice = () => {
           })
         ),
       };
-      console.log(invoiceData);
       await dispatch(createInvoice(invoiceData)).unwrap();
       toast.success("Invoice created successfully!");
-      // setIsModalOpen(false);
-      // resetForm();
+      setIsModalOpen(false);
+      resetForm();
     } catch (error) {
       toast.error(error?.message || "Failed to create invoice");
     }
@@ -529,15 +529,15 @@ const Invoice = () => {
           >
             <FiPrinter className="w-4 h-4" />
           </motion.button>
-          {/* <motion.button
+          <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            onClick={() => handleDelete(row.id)}
+            onClick={() => handleDelete(row._id)}
             className="p-2 text-danger-600 hover:bg-danger-50 rounded-lg transition-colors"
             title="Delete"
           >
             <FiTrash2 className="w-4 h-4" />
-          </motion.button> */}
+          </motion.button>
         </div>
       ),
     },

@@ -24,17 +24,15 @@ import Badge from "../../components/common/Badge";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import { toast } from "react-hot-toast";
 import { EXPENSE_CATEGORIES } from "../../utils/constants";
-import {
-  formatCurrency,
-  formatDate,
-} from "../../utils/helpers";
+import { formatCurrency, formatDate } from "../../utils/helpers";
 import FileUpload from "../../components/common/FileUpload";
 
 const Expenses = () => {
   const dispatch = useDispatch();
-  const { expenses, loading, totalItems } =
-    useSelector((state) => state.expense);
-    console.log(expenses);
+  const { expenses, loading, totalItems } = useSelector(
+    (state) => state.expense
+  );
+  console.log(expenses);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filterCategory, setFilterCategory] = useState("");
@@ -77,33 +75,15 @@ const Expenses = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // if (editingExpense) {
-      //   await dispatch(
-      //     updateExpense({ id: editingExpense._id, data: formData })
-      //   ).unwrap();
-      //   toast.success("Expense updated successfully!");
-      // } else {
-        console.log(formData);
-        await dispatch(createExpense(formData)).unwrap();
-        toast.success("Expense added successfully!");
-      // }
-      // setIsModalOpen(false);
-      // resetForm();
+      console.log(formData);
+      await dispatch(createExpense(formData)).unwrap();
+      toast.success("Expense added successfully!");
+      setIsModalOpen(false);
+      resetForm();
     } catch (error) {
       toast.error(error?.message || "Operation failed");
     }
   };
-
-  // const handleEdit = (expense) => {
-  //   setEditingExpense(expense);
-  //   setFormData({
-  //     expenseName: expense.expenseName,
-  //     category: expense.category,
-  //     amount: expense.amount,
-  //     notes: expense.notes || "",
-  //   });
-  //   setIsModalOpen(true);
-  // };
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this expense?")) {
@@ -166,7 +146,7 @@ const Expenses = () => {
     },
     {
       header: "Proof",
-      render: (row)=>
+      render: (row) => (
         <>
           {row.proof != null ? (
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -180,21 +160,15 @@ const Expenses = () => {
               </Button>
             </motion.div>
           ) : (
-            "--"
+            "----------------------"
           )}
         </>
-      
+      ),
     },
     {
       header: "Actions",
       render: (row) => (
         <div className="flex items-center gap-2">
-          {/* <button
-            onClick={() => handleEdit(row)}
-            className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-          >
-            <FiEdit2 className="w-4 h-4" />
-          </button> */}
           <button
             onClick={() => handleDelete(row._id)}
             className="p-2 text-danger-600 hover:bg-danger-50 rounded-lg transition-colors"
@@ -425,23 +399,6 @@ const Expenses = () => {
               placeholder="0.00"
             />
           </div>
-
-          {/* <div className="grid grid-cols-1 gap-4">
-            <Select
-              label="Payment Method"
-              required
-              value={formData.paymentMethod}
-              onChange={(e) =>
-                setFormData({ ...formData, paymentMethod: e.target.value })
-              }
-              options={[
-                { value: "cash", label: "Cash" },
-                { value: "bank_transfer", label: "Bank Transfer" },
-                { value: "card", label: "Card" },
-                { value: "cheque", label: "Cheque" },
-              ]}
-            />
-          </div> */}
           <div className="min-w-8">
             <FileUpload
               label="Upload Proof"

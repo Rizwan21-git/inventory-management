@@ -19,28 +19,9 @@ export const createProject = createAsyncThunk(
   }
 );
 
-export const updateProject = createAsyncThunk(
-  "project/update",
-  async ({ id }, { rejectWithValue }) => {
-    try {
-      return await projectAPI.update(id);
-    } catch (error) {
-      return rejectWithValue(error);
-    }
-  }
-);
-
 export const deleteProject = createAsyncThunk("project/delete", async (id) => {
-  await projectAPI.delete(id);
-  return id;
+  return await projectAPI.delete(id);
 });
-
-export const assignWorker = createAsyncThunk(
-  "project/assignWorker",
-  async ({ id, workerId }) => {
-    return await projectAPI.assignWorker(id, workerId);
-  }
-);
 
 export const updateProjectStatus = createAsyncThunk(
   "project/updateStatus",
@@ -53,7 +34,6 @@ const projectSlice = createSlice({
   name: "project",
   initialState: {
     projects: [],
-    currentProject: null,
     loading: false,
     error: null,
   },
@@ -78,28 +58,12 @@ const projectSlice = createSlice({
       .addCase(createProject.fulfilled, (state, action) => {
         state.projects.unshift(action.payload);
       })
-      .addCase(updateProject.fulfilled, (state, action) => {
-        const index = state.projects.findIndex(
-          (p) => p.id === action.payload.id
-        );
-        if (index !== -1) {
-          state.projects[index] = action.payload;
-        }
-      })
       .addCase(deleteProject.fulfilled, (state, action) => {
-        state.projects = state.projects.filter((p) => p.id !== action.payload);
-      })
-      .addCase(assignWorker.fulfilled, (state, action) => {
-        const index = state.projects.findIndex(
-          (p) => p.id === action.payload.id
-        );
-        if (index !== -1) {
-          state.projects[index] = action.payload;
-        }
+        state.projects = state.projects.filter((p) => p._id !== action.payload);
       })
       .addCase(updateProjectStatus.fulfilled, (state, action) => {
         const index = state.projects.findIndex(
-          (p) => p.id === action.payload.id
+          (p) => p._id === action.payload._id
         );
         if (index !== -1) {
           state.projects[index] = action.payload;

@@ -47,18 +47,18 @@ const dashboardSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // .addCase(fetchDashboardStats.pending, (state) => {
-      //   state.loading = true;
-      // })
-      // .addCase(fetchDashboardStats.fulfilled, (state, action) => {
-      //   state.loading = false;
-      //   // dashboardAPI returns response.data (the stats object)
-      //   state.stats = action.payload;
-      // })
-      // .addCase(fetchDashboardStats.rejected, (state, action) => {
-      //   state.loading = false;
-      //   state.error = action.error.message;
-      // })
+      .addCase(fetchDashboardStats.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchDashboardStats.fulfilled, (state, action) => {
+        state.loading = false;
+        // dashboardAPI returns response.data (the stats object)
+        state.stats = action.payload;
+      })
+      .addCase(fetchDashboardStats.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
       .addCase(fetchRecentActivity.fulfilled, (state, action) => {
         state.recentActivity = action.payload;
       })

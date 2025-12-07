@@ -51,6 +51,7 @@ export const inventoryAPI = {
   create: (data) => api.post("/inventory", data),
   update: (id, data) => api.put(`/inventory/${id}`, data),
   delete: (id) => api.delete(`/inventory/${id}`),
+  getLowStock: ()=>api.get("/inventory/lowStock", {}),
   updateStock: (id, data) => api.patch(`/inventory/${id}/stock`, data),
 };
 
@@ -61,6 +62,7 @@ export const invoiceAPI = {
   create: (data) => api.post("/invoices", data),
   update: (id, data) => api.patch(`/invoices/${id}`, data),
   delete: (id) => api.delete(`/invoices/${id}`),
+  getDashInvoices: ()=> api.get("/invoices/dashboard"),
   generatePDF: (id) => api.get(`/invoices/${id}/pdf`, { responseType: "blob" }),
 };
 

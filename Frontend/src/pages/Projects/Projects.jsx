@@ -17,7 +17,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   fetchProjects,
   createProject,
-  updateProject,
   deleteProject,
   updateProjectStatus,
 } from "../../slices/projectSlice";

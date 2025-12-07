@@ -22,7 +22,7 @@ const productSchema = new mongoose.Schema(
       enum: ["new", "used", "refurbished"],
       required: true,
     },
-    image: { type: String, required: false },
+    // image: { type: String, default: null },
   },
   { timestamps: true }
 );

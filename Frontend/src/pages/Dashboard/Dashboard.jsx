@@ -13,8 +13,8 @@ import {
   FiHome,
 } from "react-icons/fi";
 import { fetchDashboardStats, fetchAvailableYears } from "../../slices/dashboardSlice";
-// import { fetchLowStock } from "../../slices/inventorySlice";
-import { fetchInvoices } from "../../slices/invoiceSlice";
+import { fetchLowStock } from "../../slices/inventorySlice";
+import { fetchDashInvoices } from "../../slices/invoiceSlice";
 import Card from "../../components/common/Card";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import { formatCurrency } from "../../utils/helpers";
@@ -23,7 +23,7 @@ const Dashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { stats, loading } = useSelector((state) => state.dashboard);
-  // const { lowStockItems } = useSelector((state) => state.inventory);
+  const { lowStockItems } = useSelector((state) => state.inventory);
   // const { pendingPayments } = useSelector((state) => state.finance);
 
   // available years come directly from API (only show years available in DB)
@@ -41,10 +41,12 @@ const Dashboard = () => {
     const year = new Date().getFullYear();
     dispatch(fetchDashboardStats({ period: "this_year", year }));
     dispatch(fetchAvailableYears());
-    // dispatch(fetchLowStock());
+    dispatch(fetchLowStock({}));
     // pending payments should come from invoices (finance DB usage removed)
-    dispatch(fetchInvoices());
-  }, [dispatch]);
+    dispatch(fetchDashInvoices());
+  }, []);
+
+  console.log(lowStockItems);
 
   // When the available years list is loaded, ensure year selection is valid
   useEffect(() => {
@@ -73,26 +75,26 @@ const Dashboard = () => {
   };
 
   //will be removed
-  let lowStockItems = [
-    {
-      id: 1,
-      name: "Door1",
-      category: "Doors",
-      quantity: 3,
-    },
-    {
-      id: 2,
-      name: "Door2",
-      category: "Doors",
-      quantity: 3,
-    },
-    {
-      id: 3,
-      name: "Door2",
-      category: "Doors",
-      quantity: 3,
-    },
-  ];
+  // let lowStockItems = [
+  //   {
+  //     id: 1,
+  //     name: "Door1",
+  //     category: "Doors",
+  //     quantity: 3,
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Door2",
+  //     category: "Doors",
+  //     quantity: 3,
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Door2",
+  //     category: "Doors",
+  //     quantity: 3,
+  //   },
+  // ];
   // derive pending payments from invoices
   const invoices = useSelector((state) => state.invoice.invoices) || [];
   const pendingPayments = invoices.filter((i) => i.paymentStatus === "pending");
@@ -313,7 +315,7 @@ const Dashboard = () => {
                 <LoadingSpinner size="sm" />
               ) : (
                 <div className="space-y-3 max-h-64 overflow-y-auto custom-scrollbar">
-                  {lowStockItems.map((item) => (
+                  {lowStockItems?.map((item) => (
                     <motion.div
                       key={item._id}
                       initial={{ opacity: 0 }}

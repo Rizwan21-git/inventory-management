@@ -18,17 +18,6 @@ export const createExpense = createAsyncThunk(
   }
 );
 
-// export const updateExpense = createAsyncThunk(
-//   "expense/update",
-//   async ({ id, data }, { rejectWithValue }) => {
-//     try {
-//       return await expenseAPI.update(id, data);
-//     } catch (error) {
-//       return rejectWithValue(error);
-//     }
-//   }
-// );
-
 export const deleteExpense = createAsyncThunk("expense/delete", async (id) => {
   await expenseAPI.delete(id);
   return id;
@@ -62,16 +51,8 @@ const expenseSlice = createSlice({
       .addCase(createExpense.fulfilled, (state, action) => {
         state.expenses.unshift(action.payload);
       })
-      // .addCase(updateExpense.fulfilled, (state, action) => {
-      //   const index = state.expenses.findIndex(
-      //     (e) => e.id === action.payload.id
-      //   );
-      //   if (index !== -1) {
-      //     state.expenses[index] = action.payload;
-      //   }
-      // })
       .addCase(deleteExpense.fulfilled, (state, action) => {
-        state.expenses = state.expenses.filter((e) => e.id !== action.payload);
+        state.expenses = state.expenses.filter((e) => e._id !== action.payload);
       });
   },
 });

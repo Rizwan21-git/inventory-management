@@ -6,14 +6,14 @@ export const getAllInvoices = asyncHandler(async (req, res, next) => {
   res.json(invoices);
 });
 
-export const getInvoiceById = asyncHandler (async (req, res, next) =>{
-  const {id} = req.params;
-  const invoice = await Invoice.findById(id)
+export const getInvoiceById = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const invoice = await Invoice.findById(id);
   if (!invoice) {
     res.status(404);
     throw new Error("Invoice not found");
   }
-})
+});
 
 export const addInvoice = asyncHandler(async (req, res, next) => {
   const {
@@ -62,9 +62,45 @@ export const addInvoice = asyncHandler(async (req, res, next) => {
   res.status(201).json(savedInvoice);
 });
 
+export const getDashInvoices = asyncHandler(async (req, res, next) => {
+  // const dashboardInvoices = await Invoice.aggregate([
+  //   {
+  //     facet: {
+  //       investment: [
+  //         { match: { invoiceType: "investment" } },
+  //         { group: { _id: null, totalSum: { sum: "total" } } },
+  //       ],
+  //       profit: [
+  //         { match: { invoiceType: { in: ["selling", "dropShipping"] } } },
+  //         {
+  //           group: {
+  //             _id: null,
+  //             profitSum: { sum: "profit" },
+  //           },
+  //         },
+  //       ],
+  //       pendingInvoices: [
+  //         {
+  //           match: {
+  //             status: "pending",
+  //             project: {
+  //               _id: 0,
+  //               invoiceNumber: 1,
+  //               total: 1,
+  //             },
+  //           },
+  //         },
+  //       ],
+  //     },
+  //   },
+  // ]);
+  // console.log(dashboardInvoices);
+  res.json([]);
+});
+
 export const updateInvoice = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
-  const data  = req.body;
+  const data = req.body;
   console.log("at controller", id, data);
   const updatedInvoice = await Invoice.findByIdAndUpdate(id, data, {
     new: true,

@@ -7,6 +7,12 @@ export const getAllProducts = asyncHandler(async (req, res, next) => {
   res.json(products);
 });
 
+export const getLowStock = asyncHandler(async (req, res, next) => {
+  const lowStockItems = await Product.find({quantity:{$lte:10}},{name:1, quantity:1, category:1, _id:0});
+  console.log(lowStockItems);
+  res.json(lowStockItems);
+});
+
 export const addProduct = asyncHandler(async (req, res, next) => {
   const {
     name,
@@ -17,7 +23,7 @@ export const addProduct = asyncHandler(async (req, res, next) => {
     sellingPrice,
     profitMargin,
     condition,
-    image,
+    // image,
   } = req.body;
   const newProduct = new Product({
     name,
@@ -28,7 +34,7 @@ export const addProduct = asyncHandler(async (req, res, next) => {
     sellingPrice,
     profitMargin,
     condition,
-    image,
+    // image,
   });
   const savedProduct = await newProduct.save();
   res.status(201).json(savedProduct);

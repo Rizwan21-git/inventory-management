@@ -1,11 +1,11 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { invoiceAPI } from '../services/api';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { invoiceAPI } from "../services/api";
 
 // TEMPORARY: Use mock data until backend is ready
 // import mockApi from '../services/mockApi';
 
 export const fetchInvoices = createAsyncThunk(
-  'invoice/fetchAll',
+  "invoice/fetchAll",
   async (params = {}) => {
     return await invoiceAPI.getAll(params);
   }
@@ -19,14 +19,14 @@ export const fetchInvoices = createAsyncThunk(
 // );
 
 export const fetchInvoiceById = createAsyncThunk(
-  'invoice/fetchById',
+  "invoice/fetchById",
   async (id) => {
     return await invoiceAPI.getById(id);
   }
 );
 
 export const createInvoice = createAsyncThunk(
-  'invoice/create',
+  "invoice/create",
   async (data, { rejectWithValue }) => {
     try {
       return await invoiceAPI.create(data);
@@ -37,7 +37,7 @@ export const createInvoice = createAsyncThunk(
 );
 
 export const updateInvoice = createAsyncThunk(
-  'invoice/update',
+  "invoice/update",
   async ({ id, data }, { rejectWithValue }) => {
     try {
       return await invoiceAPI.update(id, data);
@@ -47,19 +47,28 @@ export const updateInvoice = createAsyncThunk(
   }
 );
 
-export const deleteInvoice = createAsyncThunk(
-  'invoice/delete',
-  async (id) => {
-    await invoiceAPI.delete(id);
-    return id;
+export const deleteInvoice = createAsyncThunk("invoice/delete", async (id) => {
+  await invoiceAPI.delete(id);
+  return id;
+});
+
+export const fetchDashInvoices = createAsyncThunk(
+  "invoices/dashboard",
+  async (/*{ rejectWithValue }*/) => {
+    try {
+      return await invoiceAPI.getDashInvoices();
+    } catch (error) {
+      // return rejectWithValue(error);
+      return error;
+    }
   }
 );
 
 const invoiceSlice = createSlice({
-  name: 'invoice',
+  name: "invoice",
   initialState: {
     invoices: [],
-    currentInvoice: null,
+    trigger: false,
     loading: false,
     error: null,
     // totalItems: 0,
@@ -80,7 +89,6 @@ const invoiceSlice = createSlice({
       .addCase(fetchInvoices.fulfilled, (state, action) => {
         state.loading = false;
         state.invoices = action.payload;
-        // state.totalItems = action.payload.data.totalItems;
       })
       .addCase(fetchInvoices.rejected, (state, action) => {
         state.loading = false;
@@ -90,17 +98,21 @@ const invoiceSlice = createSlice({
         state.currentInvoice = action.payload;
       })
       .addCase(createInvoice.fulfilled, (state, action) => {
-        // state.invoices.unshift(action.payload);
+        state.trigger = !state.trigger;
+        state.invoices.unshift(action.payload);
         console.log(state.payload);
       })
       .addCase(updateInvoice.fulfilled, (state, action) => {
-        const index = state.invoices.findIndex(i => i.id === action.payload.id);
+        const index = state.invoices.findIndex(
+          (i) => i._id === action.payload._id
+        );
         if (index !== -1) {
           state.invoices[index] = action.payload;
         }
       })
       .addCase(deleteInvoice.fulfilled, (state, action) => {
-        state.invoices = state.invoices.filter(i => i.id !== action.payload);
+        // state.trigger = !state.trigger;
+        state.invoices = state.invoices.filter((i) => i._id !== action.payload);
       });
   },
 });

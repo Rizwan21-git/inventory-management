@@ -51,10 +51,21 @@ export const deleteInventoryItem = createAsyncThunk(
 
 export const updateStock = createAsyncThunk(
   "inventory/updateStock",
-  async ({id, data},/* { rejectWithValue }*/) => {
+  async ({id, data}, { rejectWithValue }) => {
     try {
-      console.log("at slice ", id, data);
       return await inventoryAPI.updateStock(id, data);
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const fetchLowStock = createAsyncThunk(
+  "inventory/lowStock",
+  async () => {
+    try {
+      console.log("At inventory")
+      return await inventoryAPI.getLowStock();
     } catch (err) {
       // return rejectWithValue(err);
       return err;
@@ -125,6 +136,19 @@ const inventorySlice = createSlice({
       .addCase(updateStock.rejected, (state, action)=>{
         state.error = action.payload;
       })
+      //low stock
+      .addCase(fetchLowStock.pending,(state, action)=>{
+        state.loading = true;
+      } )
+      .addCase(fetchLowStock.fulfilled,(state, action)=>{
+        state.loading = false;
+        console.log(action.payload);
+        state.lowStockItems = action.payload;
+      } )
+      .addCase(fetchLowStock.rejected,(state, action)=>{
+        state.loading = false;
+        state.error = action.payload;
+      } )
   },
 });
 

@@ -49,12 +49,12 @@ export const deleteProject = asyncHandler(async (req, res, next) => {
 export const updateStatus = asyncHandler(async(req, res, next)=>{
   const {id} = req.params;
   const data = req.body;
-  console.log(data);
-  const updatedProject = await Project.findByIdAndUpdate(id, data);
+  const found = await Project.findById(id);
+  found && await found.updateOne(data);
+  const updatedProject = await Project.findById(id);
   if (!updatedProject) {
     res.status(404);
     throw new console.error("Project not found");
   }
-  // console.log(updatedProject);
   res.json(updatedProject);
 })
