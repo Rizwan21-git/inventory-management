@@ -389,20 +389,40 @@ const Invoice = () => {
       setIsModalOpen(false);
       resetForm();
     } catch (error) {
-      toast.error(error?.message || "Failed to create invoice");
+      toast.error(error || "Failed to create invoice");
     }
   };
 
   // Payment proof upload
+  // const handlePaymentProofUpload = (files) => {
+  //   if (!files || files.length === 0) return;
+  //   const file = files[0];
+  //   const reader = new FileReader();
+  //   reader.onload = (e) => {
+  //     setFormData({ ...formData, paymentProof: e.target.result });
+  //   };
+  //   reader.readAsDataURL(file);
+  // };
+
+  const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+
   const handlePaymentProofUpload = (files) => {
     if (!files || files.length === 0) return;
+
     const file = files[0];
+
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error("File size exceeds 2 MB");
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (e) => {
       setFormData({ ...formData, paymentProof: e.target.result });
     };
     reader.readAsDataURL(file);
   };
+
 
   const handleDownloadPDF = (invoice) => {
     try {

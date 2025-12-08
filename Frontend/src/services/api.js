@@ -1,7 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL =
-  import.meta.env.API_BASE_URL || "http://localhost:5000";
+const API_BASE_URL ="http://localhost:5000";
 
 // Create axios instance
 const api = axios.create({
@@ -60,9 +59,17 @@ export const invoiceAPI = {
   getAll: (params) => api.get("/invoices", { params }),
   getById: (id) => api.get(`/invoices/${id}`),
   create: (data) => api.post("/invoices", data),
-  update: (id, data) => api.patch(`/invoices/${id}`, data),
+  // update: (id, data) => api.patch(`/invoices/${id}`, data),
+  update: (id, data) => {
+    const isFormData = data instanceof FormData;
+    return api.patch(`/invoices/${id}`, data, {
+      headers: isFormData
+        ? { "Content-Type": "multipart/form-data" }
+        : { "Content-Type": "application/json" },
+    });
+  },
   delete: (id) => api.delete(`/invoices/${id}`),
-  getDashInvoices: ()=> api.get("/invoices/dashboard"),
+  getDashInvoices: () => api.get("/invoices/dashboard"),
   generatePDF: (id) => api.get(`/invoices/${id}/pdf`, { responseType: "blob" }),
 };
 
@@ -93,16 +100,20 @@ export const dashboardAPI = {
 };
 
 export const shopAPI = {
+  // Shops
   getShops: () => api.get("/shops"),
   getShopById: (id) => api.get(`/shops/${id}`),
   createShop: (shopData) => api.post("/shops", shopData),
   updateShop: (id, shopData) => api.put(`/shops/${id}`, shopData),
   deleteShop: (id) => api.delete(`/shops/${id}`),
-  getWorkersByShop : (shopId) => api.get(`shops/${shopId}/workers`),
-  getAllWorkers : () => api.get("workers"),
-  createWorker : (workerData) => api.post("workers", workerData),
-  updateWorker : (id, workerData) => api.put(`workers/${id}`, workerData),
-  deleteWorker : (id) => api.delete(`workers/${id}`),
+
+  // Workers
+  getWorkersByShop: (shopId) => api.get(`/shops/${shopId}/workers`),
+  getAllWorkers: () => api.get("/shops/workers"),
+  createWorker: (workerData) => api.post("/shops/workers", workerData),
+  updateWorker: (id, workerData) =>
+    api.put(`/shops/workers/${id}/permissions`, workerData),
+  deleteWorker: (id) => api.delete(`/shops/workers/${id}`),
 };
 
 export default api;

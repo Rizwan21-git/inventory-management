@@ -46,8 +46,6 @@ const Dashboard = () => {
     dispatch(fetchDashInvoices());
   }, []);
 
-  console.log(lowStockItems);
-
   // When the available years list is loaded, ensure year selection is valid
   useEffect(() => {
     if (timeRange.period === "year" && availableYears.length > 0) {

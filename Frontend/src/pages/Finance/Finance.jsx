@@ -489,14 +489,14 @@ const Finance = () => {
           setSelectedRecord(null);
         }}
         title="Payment Proof"
-        size="lg"
+        size="sm"
       >
         {selectedRecord?.paymentProof ? (
           <div className="space-y-4">
             <img
               src={selectedRecord.paymentProof}
               alt="Payment Proof"
-              className="w-full rounded-lg"
+              className="w-80 h-80 rounded-lg"
             />
             <div className="text-sm text-gray-600">
               <p>

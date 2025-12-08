@@ -271,7 +271,12 @@ const Projects = () => {
   ];
 
   return (
-    <AnimatePresence>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+     {/* <AnimatePresence> */}
       <motion.div
         key="projects-page"
         initial={{ opacity: 0 }}
@@ -589,7 +594,8 @@ const Projects = () => {
           </form>
         </Modal>
       </motion.div>
-    </AnimatePresence>
+    {/* </AnimatePresence> */}
+    </motion.div>
   );
 };
 

@@ -34,7 +34,9 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      console.log(credentials);
       await dispatch(login(credentials)).unwrap();
+      localStorage.setItem("token", "json-web-token");
       toast.success("Login successful!");
       navigate("/");
     } catch (err) {

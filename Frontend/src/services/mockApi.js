@@ -2,8 +2,8 @@ const delay = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const mockApi = {
   // Auth
-  login: async () => {
-    await delay(800);
+  login: async (credentials) => {
+    // await delay(800);
     return {
       success: true,
       data: {

@@ -23,6 +23,7 @@ export const login = createAsyncThunk(
   async (credentials, { rejectWithValue }) => {
     try {
       const response = await mockApi.login(credentials);
+      console.log(response.data.token);
       localStorage.setItem("token", response.data.token);
       return response;
     } catch (error) {
@@ -87,6 +88,7 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.user = action.payload.data.user,
         state.token = action.payload.data.token;
+        console.log(state.token);
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;

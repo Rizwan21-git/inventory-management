@@ -77,7 +77,11 @@ import { toast } from 'react-hot-toast';
 const Header = ({ onMenuClick }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user } = useSelector((state) => state.auth);
+  // const { user } = useSelector((state) => state.auth);
+  const user = {
+    name: "Muhammad Rizwan",
+    role:"Admin"
+  }
 
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const notifRef = useRef(null);

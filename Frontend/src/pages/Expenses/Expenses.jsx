@@ -199,6 +199,11 @@ const Expenses = () => {
   );
 
   return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
     <div>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
@@ -426,6 +431,7 @@ const Expenses = () => {
         </form>
       </Modal>
     </div>
+    </motion.div>
   );
 };
 

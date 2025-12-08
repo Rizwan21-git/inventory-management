@@ -1,27 +1,44 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { expenseAPI } from "../services/api";
+
+// Fetch all expenses
 export const fetchExpenses = createAsyncThunk(
   "expense/fetchAll",
-  async (params = {}) => {
-    return await expenseAPI.getAll(params);
-  }
-);
-
-export const createExpense = createAsyncThunk(
-  "expense/create",
-  async (data, { rejectWithValue }) => {
+  async (params = {}, { rejectWithValue }) => {
     try {
-      return await expenseAPI.create(data);
+      const response = await expenseAPI.getAll(params);
+      return response.data;
     } catch (error) {
-      return rejectWithValue(error);
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
 
-export const deleteExpense = createAsyncThunk("expense/delete", async (id) => {
-  await expenseAPI.delete(id);
-  return id;
-});
+// Create a new expense
+export const createExpense = createAsyncThunk(
+  "expense/create",
+  async (data, { rejectWithValue }) => {
+    try {
+      const response = await expenseAPI.create(data);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+// Delete an expense
+export const deleteExpense = createAsyncThunk(
+  "expense/delete",
+  async (id, { rejectWithValue }) => {
+    try {
+      await expenseAPI.delete(id);
+      return id;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
 
 const expenseSlice = createSlice({
   name: "expense",
@@ -37,6 +54,7 @@ const expenseSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // Fetch
       .addCase(fetchExpenses.pending, (state) => {
         state.loading = true;
       })
@@ -46,13 +64,23 @@ const expenseSlice = createSlice({
       })
       .addCase(fetchExpenses.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.payload || action.error.message;
       })
+
+      // Create
       .addCase(createExpense.fulfilled, (state, action) => {
         state.expenses.unshift(action.payload);
       })
+      .addCase(createExpense.rejected, (state, action) => {
+        state.error = action.payload || action.error.message;
+      })
+
+      // Delete
       .addCase(deleteExpense.fulfilled, (state, action) => {
         state.expenses = state.expenses.filter((e) => e._id !== action.payload);
+      })
+      .addCase(deleteExpense.rejected, (state, action) => {
+        state.error = action.payload || action.error.message;
       });
   },
 });

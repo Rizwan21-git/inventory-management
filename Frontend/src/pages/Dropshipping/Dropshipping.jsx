@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { motion } from "framer-motion";
 import {
   FiDownload,
   FiEye,
@@ -239,82 +240,94 @@ const Dropshipping = () => {
   }, 0);
 
   return (
-    <div>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <FiPackage className="text-primary-600" />
-            Dropshipping Orders
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Track and manage dropshipping orders
-          </p>
-        </div>
-      </div>
-
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Total Orders</p>
-              <h3 className="text-2xl font-bold text-gray-900 mt-1">
-                {totalOrders}
-              </h3>
-            </div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
+              <FiPackage className="text-primary-600" />
+              Dropshipping Orders
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Track and manage dropshipping orders
+            </p>
           </div>
-        </Card>
-
-        <Card>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Total Revenue</p>
-              <h3 className="text-2xl font-bold text-primary-600 mt-1">
-                {formatCurrency(totalSellRevenue)}
-              </h3>
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Total Profit</p>
-              <h3
-                className={`text-2xl font-bold mt-1 ${
-                  totalProfit >= 0 ? "text-success-600" : "text-danger-600"
-                }`}
-              >
-                {formatCurrency(totalProfit)}
-              </h3>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Table */}
-      <Card>
-        <div className="mb-4">
-          <Input
-            placeholder="Search by invoice #, customer name, or supplier name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
         </div>
 
-        {loading && filteredInvoices.length === 0 ? (
-          <LoadingSpinner size="md" />
-        ) : (
-          <Table
-            columns={columns}
-            data={filteredInvoices}
-            loading={loading}
-            emptyMessage="No dropshipping orders found. Create orders from the Invoice page."
-          />
-        )}
-      </Card>
-    </div>
+        {/* Summary Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500">
+                  Total Orders
+                </p>
+                <h3 className="text-2xl font-bold text-gray-900 mt-1">
+                  {totalOrders}
+                </h3>
+              </div>
+            </div>
+          </Card>
+
+          <Card>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500">
+                  Total Revenue
+                </p>
+                <h3 className="text-2xl font-bold text-primary-600 mt-1">
+                  {formatCurrency(totalSellRevenue)}
+                </h3>
+              </div>
+            </div>
+          </Card>
+
+          <Card>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500">
+                  Total Profit
+                </p>
+                <h3
+                  className={`text-2xl font-bold mt-1 ${
+                    totalProfit >= 0 ? "text-success-600" : "text-danger-600"
+                  }`}
+                >
+                  {formatCurrency(totalProfit)}
+                </h3>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Table */}
+        <Card>
+          <div className="mb-4">
+            <Input
+              placeholder="Search by invoice #, customer name, or supplier name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          {loading && filteredInvoices.length === 0 ? (
+            <LoadingSpinner size="md" />
+          ) : (
+            <Table
+              columns={columns}
+              data={filteredInvoices}
+              loading={loading}
+              emptyMessage="No dropshipping orders found. Create orders from the Invoice page."
+            />
+          )}
+        </Card>
+      </div>
+    </motion.div>
   );
 };
 
