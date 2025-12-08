@@ -92,17 +92,18 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
       (p) => p.category === "home_interior"
     );
 
-    const doorsCount = doorProducts.length;
-    const doorsInStock = doorProducts.filter((p) => p.quantity > 0).length;
-    const doorsLowStock = doorProducts.filter((p) => p.quantity < 5).length;
+    const doorsOutOfStock = doorProducts.filter((p) => p.quantity === 0).length;
+    const doorsLowStock = doorProducts.filter((p) => p.quantity > 0 && p.quantity <= 10).length;
+    // 'In stock' here means sufficiently stocked (quantity > low-stock threshold)
+    const doorsInStock = doorProducts.filter((p) => p.quantity > 10).length;
+    // Total items considered for the section: inStock + lowStock (exclude out-of-stock)
+    const doorsCount = doorsInStock + doorsLowStock;
 
-    const interiorCount = interiorProducts.length;
-    const interiorInStock = interiorProducts.filter(
-      (p) => p.quantity > 0
-    ).length;
-    const interiorLowStock = interiorProducts.filter(
-      (p) => p.quantity < 5
-    ).length;
+    const interiorOutOfStock = interiorProducts.filter((p) => p.quantity === 0).length;
+    const interiorLowStock = interiorProducts.filter((p) => p.quantity > 0 && p.quantity <= 10).length;
+    const interiorInStock = interiorProducts.filter((p) => p.quantity > 10).length;
+    // Total items considered for the section: inStock + lowStock (exclude out-of-stock)
+    const interiorCount = interiorInStock + interiorLowStock;
 
     // Calculate monthly revenue breakdown (selling + dropshipping only)
     const monthly = [];
@@ -123,6 +124,20 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
       });
     }
 
+    // Recent pending payments (from invoices in period) - show a small list for dashboard
+    const pendingPayments = invoices
+      .filter((inv) => inv.paymentStatus === "pending")
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 10)
+      .map((inv) => ({
+        _id: inv._id,
+        invoiceNumber: inv.invoiceNumber,
+        name: inv.name || inv.customerName || "",
+        total: inv.total || 0,
+        paymentStatus: inv.paymentStatus,
+        createdAt: inv.createdAt,
+      }));
+
     res.json({
       kpis: {
         totals: {
@@ -134,12 +149,15 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
         },
         monthly,
       },
+      pendingPayments,
       doorsCount,
       doorsInStock,
       doorsLowStock,
+      doorsOutOfStock,
       interiorCount,
       interiorInStock,
       interiorLowStock,
+      interiorOutOfStock,
     });
   } catch (error) {
     res.status(500);

@@ -9,6 +9,29 @@ export const formatCurrency = (amount, currency = "PKR") => {
   }).format(amount || 0);
 };
 
+// Compact currency formatter for large numbers (e.g., 1.2K, 3.4M)
+export const formatCompactCurrency = (amount, currency = "PKR") => {
+  if (amount === null || amount === undefined) return "";
+  // Use Intl.NumberFormat compact notation when available
+  try {
+    const nf = new Intl.NumberFormat("en-PK", {
+      style: "currency",
+      currency,
+      notation: "compact",
+      compactDisplay: "short",
+      maximumFractionDigits: 1,
+    });
+    return nf.format(amount);
+  } catch (e) {
+    // Fallback: simple manual compact formatting
+    const abs = Math.abs(amount);
+    if (abs >= 1_000_000_000) return `${(amount / 1_000_000_000).toFixed(1)}B`;
+    if (abs >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}M`;
+    if (abs >= 1_000) return `${(amount / 1_000).toFixed(1)}K`;
+    return formatCurrency(amount, currency);
+  }
+};
+
 // Format date
 export const formatDate = (date, formatStr = DATE_FORMAT) => {
   if (!date) return "";

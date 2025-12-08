@@ -17,7 +17,7 @@ import { fetchLowStock } from "../../slices/inventorySlice";
 import { fetchDashInvoices } from "../../slices/invoiceSlice";
 import Card from "../../components/common/Card";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
-import { formatCurrency } from "../../utils/helpers";
+import { formatCurrency, formatCompactCurrency } from "../../utils/helpers";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -72,21 +72,31 @@ const Dashboard = () => {
     );
   };
   
-  // derive pending payments from dashboard-specific invoices if available, otherwise use full invoices list
+  // derive pending payments: prefer server-provided dashboard pendingPayments, otherwise fallback to invoices
   const invoices = useSelector((state) => state.invoice.invoices) || [];
   const dashInvoices = useSelector((state) => state.invoice.dashInvoices) || [];
   const sourceInvoices = dashInvoices.length > 0 ? dashInvoices : invoices;
-  const pendingPayments = sourceInvoices
-    .filter((i) => i.paymentStatus === "pending")
-    .map((payment) => ({
-      ...payment,
-      id: payment._id,
-      customerName: payment.name,
-      amount: payment.total,
-    }));
+  const serverPending = stats?.pendingPayments || null;
+  const pendingPayments = serverPending
+    ? serverPending.map((p) => ({
+        id: p._id,
+        customerName: p.name || p.customerName || "",
+        invoiceNumber: p.invoiceNumber,
+        amount: p.total || 0,
+        createdAt: p.createdAt,
+      }))
+    : sourceInvoices
+        .filter((i) => i.paymentStatus === "pending")
+        .map((payment) => ({
+          id: payment._id,
+          customerName: payment.name || payment.customerName || "",
+          invoiceNumber: payment.invoiceNumber,
+          amount: payment.total,
+          createdAt: payment.createdAt,
+        }));
 
   return (
-    <div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -186,97 +196,70 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1  gap-4 mb-8">
-        {/* KPI area - show totals for selected period */}
-        <Card className="bg-white col-span-1 lg:col-span-2">
-          <div className="flex justify-between items-center mb-4">
+      {/* KPI Cards - refreshed UI */}
+      <div className="grid grid-cols-1 gap-8 mb-8 lg:grid-cols-1 items-start auto-rows-fr">
+        {/* Big Overview Card */}
+        <Card className="col-span-1 p-6 bg-gradient-to-br from-white to-gray-50 border border-gray-100">
+          <div className="flex items-start justify-between">
             <div>
-              <h3 className="text-lg font-semibold">Financial Overview</h3>
-              <p className="text-sm text-gray-500 mt-1">
-                Total KPIs for the selected period
-              </p>
+              <h3 className="text-xl font-semibold">Financial Overview</h3>
+              <p className="text-sm text-gray-500 mt-1">Totals for the selected period</p>
             </div>
-            <div className="text-xs text-gray-500">
-              {loading ? "Loading..." : `Period: ${timeRange.year}`}
+            <div className="text-sm text-gray-500">{loading ? "Loading..." : `Period: ${timeRange.year}`}</div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 mt-5">
+            <div className="p-4 rounded-lg shadow-sm bg-white border border-gray-100 flex items-center gap-3 min-w-0">
+              <div className="p-3 bg-primary-50 rounded-lg text-primary-600"><FiDollarSign className="w-5 h-5"/></div>
+              <div>
+                <div className="text-xs text-gray-500">Total Revenue</div>
+                <div className="text-lg font-bold text-green-700 mt-1 truncate text-right" title={formatCurrency(stats?.kpis?.totals?.totalRevenue || 0)}>
+                  {formatCompactCurrency(stats?.kpis?.totals?.totalRevenue || 0)}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-lg shadow-sm bg-white border border-gray-100 flex items-center gap-3 min-w-0">
+              <div className="p-3 bg-primary-50 rounded-lg text-primary-600"><FiBriefcase className="w-5 h-5"/></div>
+              <div>
+                <div className="text-xs text-gray-500">Total Investment</div>
+                <div className="text-lg font-bold text-primary-700 mt-1 truncate text-right" title={formatCurrency(stats?.kpis?.totals?.totalInvestment || 0)}>
+                  {formatCompactCurrency(stats?.kpis?.totals?.totalInvestment || 0)}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-lg shadow-sm bg-white border border-gray-100 flex items-center gap-3 min-w-0">
+              <div className="p-3 bg-indigo-50 rounded-lg text-indigo-600"><FiTrendingUp className="w-5 h-5"/></div>
+              <div>
+                <div className="text-xs text-gray-500">Gross Profit</div>
+                <div className="text-lg font-bold text-indigo-700 mt-1 truncate text-right" title={formatCurrency(stats?.kpis?.totals?.grossProfit || 0)}>
+                  {formatCompactCurrency(stats?.kpis?.totals?.grossProfit || 0)}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-lg shadow-sm bg-white border border-gray-100 flex items-center gap-3 min-w-0">
+              <div className="p-3 bg-red-50 rounded-lg text-red-600"><FiFileText className="w-5 h-5"/></div>
+              <div>
+                <div className="text-xs text-gray-500">Total Expenses</div>
+                <div className="text-lg font-bold text-red-700 mt-1 truncate text-right" title={formatCurrency(stats?.kpis?.totals?.totalExpenses || 0)}>
+                  {formatCompactCurrency(stats?.kpis?.totals?.totalExpenses || 0)}
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-              <div className="text-sm text-gray-500">Total Revenue</div>
-              <div className="text-2xl font-bold text-success-700 mt-2">
-                {formatCurrency(stats?.kpis?.totals?.totalRevenue || 0)}
-              </div>
-            </div>
-            <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-              <div className="text-sm text-gray-500">Total Investment</div>
-              <div className="text-2xl font-bold text-primary-700 mt-2">
-                {formatCurrency(stats?.kpis?.totals?.totalInvestment || 0)}
-              </div>
-            </div>
-            <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-              <div className="text-sm text-gray-500">Gross Profit</div>
-              <div className="text-2xl font-bold text-indigo-700 mt-2">
-                {formatCurrency(stats?.kpis?.totals?.grossProfit || 0)}
-              </div>
-            </div>
-            <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-              <div className="text-sm text-gray-500">Total Expenses</div>
-              <div className="text-2xl font-bold text-danger-700 mt-2">
-                {formatCurrency(stats?.kpis?.totals?.totalExpenses || 0)}
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 p-4 rounded-lg border border-gray-100 bg-white">
-            <div className="flex items-center justify-between">
+          <div className="mt-6 p-4 rounded-lg border border-gray-100 bg-white flex items-center justify-between">
+            <div>
               <div className="text-sm text-gray-500">Net Profit</div>
-              <div className="text-3xl font-extrabold text-primary-600">
+              <div className={`text-3xl font-extrabold mt-1 ${ (stats?.kpis?.totals?.netProfit || 0) >= 0 ? 'text-primary-600' : 'text-danger-600'}`}>
                 {formatCurrency(stats?.kpis?.totals?.netProfit || 0)}
               </div>
             </div>
+            <div className="text-sm text-gray-500">Updated: -</div>
           </div>
 
-          {/* Monthly mini chart */}
-          {stats?.kpis?.monthly && (
-            <div className="mt-6">
-              <h4 className="text-sm text-gray-600 mb-2">Monthly snapshot</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {stats.kpis.monthly.slice(0, 12).map((m) => {
-                  const pct = Math.max(
-                    1,
-                    Math.round(
-                      (m.revenue / (stats.kpis.totals.totalRevenue || 1)) * 100
-                    )
-                  );
-                  return (
-                    <div
-                      key={m.month}
-                      className="p-3 bg-white border rounded-lg"
-                    >
-                      <div className="flex justify-between items-center mb-2">
-                        <div className="text-sm font-medium text-gray-700">
-                          {new Date(0, m.month - 1).toLocaleString("default", {
-                            month: "short",
-                          })}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {formatCurrency(m.revenue)}
-                        </div>
-                      </div>
-                      <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                        <div
-                          className="h-2 bg-primary-600"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </Card>
       </div>
 
@@ -426,6 +409,12 @@ const Dashboard = () => {
                       {stats?.doorsLowStock || 0}
                     </span>
                   </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Out of Stock</span>
+                    <span className="font-semibold text-danger-700">
+                      {stats?.doorsOutOfStock || 0}
+                    </span>
+                  </div>
                 </div>
                 <div className="absolute bottom-0 left-0 w-full h-1 bg-primary-500" />
               </>
@@ -479,6 +468,12 @@ const Dashboard = () => {
                     <span className="text-gray-600">Low Stock</span>
                     <span className="font-semibold text-danger-600">
                       {stats?.interiorLowStock || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Out of Stock</span>
+                    <span className="font-semibold text-danger-700">
+                      {stats?.interiorOutOfStock || 0}
                     </span>
                   </div>
                 </div>
