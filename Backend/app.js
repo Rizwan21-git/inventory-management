@@ -11,6 +11,7 @@ import invoiceRoutes from "./routes/invoice.route.js";
 import projectRoutes from "./routes/project.route.js";
 import expenseRoutes from "./routes/expense.route.js";
 import shopRoutes from "./routes/shop.route.js";
+import dashboardRoutes from "./routes/dashboard.route.js";
 
 
 const app = express();
@@ -26,6 +27,7 @@ app.use("/invoices", invoiceRoutes);
 app.use("/projects", projectRoutes);
 app.use("/expenses", expenseRoutes);
 app.use("/shops", shopRoutes);
+app.use("/dashboard", dashboardRoutes);
 
 // CORS configuration
 // const corsOptions = {

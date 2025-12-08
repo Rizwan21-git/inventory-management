@@ -68,6 +68,7 @@ const invoiceSlice = createSlice({
   name: "invoice",
   initialState: {
     invoices: [],
+    dashInvoices: [],
     trigger: false,
     loading: false,
     error: null,
@@ -113,6 +114,12 @@ const invoiceSlice = createSlice({
       .addCase(deleteInvoice.fulfilled, (state, action) => {
         // state.trigger = !state.trigger;
         state.invoices = state.invoices.filter((i) => i._id !== action.payload);
+      })
+      .addCase(fetchDashInvoices.fulfilled, (state, action) => {
+        // Keep dashboard-specific invoices separate so we don't overwrite the main invoices list
+        if (Array.isArray(action.payload)) {
+          state.dashInvoices = action.payload;
+        }
       });
   },
 });

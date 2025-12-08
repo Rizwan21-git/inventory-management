@@ -42,9 +42,9 @@ const Dashboard = () => {
     dispatch(fetchDashboardStats({ period: "this_year", year }));
     dispatch(fetchAvailableYears());
     dispatch(fetchLowStock({}));
-    // pending payments should come from invoices (finance DB usage removed)
+    // fetch dashboard invoices (recent) used by dashboard widgets
     dispatch(fetchDashInvoices());
-  }, []);
+  }, [dispatch]);
 
   // When the available years list is loaded, ensure year selection is valid
   useEffect(() => {
@@ -71,31 +71,19 @@ const Dashboard = () => {
       })
     );
   };
-
-  //will be removed
-  // let lowStockItems = [
-  //   {
-  //     id: 1,
-  //     name: "Door1",
-  //     category: "Doors",
-  //     quantity: 3,
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Door2",
-  //     category: "Doors",
-  //     quantity: 3,
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Door2",
-  //     category: "Doors",
-  //     quantity: 3,
-  //   },
-  // ];
-  // derive pending payments from invoices
+  
+  // derive pending payments from dashboard-specific invoices if available, otherwise use full invoices list
   const invoices = useSelector((state) => state.invoice.invoices) || [];
-  const pendingPayments = invoices.filter((i) => i.paymentStatus === "pending");
+  const dashInvoices = useSelector((state) => state.invoice.dashInvoices) || [];
+  const sourceInvoices = dashInvoices.length > 0 ? dashInvoices : invoices;
+  const pendingPayments = sourceInvoices
+    .filter((i) => i.paymentStatus === "pending")
+    .map((payment) => ({
+      ...payment,
+      id: payment._id,
+      customerName: payment.name,
+      amount: payment.total,
+    }));
 
   return (
     <div>

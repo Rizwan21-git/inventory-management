@@ -13,6 +13,7 @@ export const getInvoiceById = asyncHandler(async (req, res, next) => {
     res.status(404);
     throw new Error("Invoice not found");
   }
+  res.json(invoice);
 });
 
 export const addInvoice = asyncHandler(async (req, res, next) => {
@@ -63,40 +64,27 @@ export const addInvoice = asyncHandler(async (req, res, next) => {
 });
 
 export const getDashInvoices = asyncHandler(async (req, res, next) => {
-  // const dashboardInvoices = await Invoice.aggregate([
-  //   {
-  //     facet: {
-  //       investment: [
-  //         { match: { invoiceType: "investment" } },
-  //         { group: { _id: null, totalSum: { sum: "total" } } },
-  //       ],
-  //       profit: [
-  //         { match: { invoiceType: { in: ["selling", "dropShipping"] } } },
-  //         {
-  //           group: {
-  //             _id: null,
-  //             profitSum: { sum: "profit" },
-  //           },
-  //         },
-  //       ],
-  //       pendingInvoices: [
-  //         {
-  //           match: {
-  //             status: "pending",
-  //             project: {
-  //               _id: 0,
-  //               invoiceNumber: 1,
-  //               total: 1,
-  //             },
-  //           },
-  //         },
-  //       ],
-  //     },
-  //   },
-  // ]);
-  // console.log(dashboardInvoices);
-  res.json([]);
+  try {
+    // Return recent invoices for dashboard (most recent 20)
+    const recentInvoices = await Invoice.find().sort({ createdAt: -1 }).limit(20);
+    res.json(recentInvoices);
+  } catch (error) {
+    res.status(500);
+    throw new Error("Failed to fetch dashboard invoices");
+  }
 });
+
+export const getPendingInvoices = asyncHandler(async (req, res, next) => {
+  try {
+    // Return invoices with paymentStatus 'pending', newest first
+    const pending = await Invoice.find({ paymentStatus: 'pending' }).sort({ createdAt: -1 }).limit(50);
+    res.json(pending);
+  } catch (error) {
+    res.status(500);
+    throw new Error('Failed to fetch pending invoices');
+  }
+});
+
 
 export const updateInvoice = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
