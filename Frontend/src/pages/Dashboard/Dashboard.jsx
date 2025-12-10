@@ -264,7 +264,7 @@ const Dashboard = () => {
       </div>
 
       {/* Alerts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className={`grid grid-cols-1 ${lowStockItems.length !=0 && pendingPayments.length !=0 && "lg:grid-cols-2" } mb-9  gap-6`}>
         {/* Low Stock Alert */}
         {lowStockItems?.length > 0 && (
           <motion.div

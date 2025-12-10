@@ -46,7 +46,6 @@ const Button = ({
     fullWidth && "w-full",
     className
   );
-
   return (
     <motion.button
       whileTap={{ scale: disabled || loading ? 1 : 0.98 }}

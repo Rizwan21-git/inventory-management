@@ -41,7 +41,6 @@ export const createShop = createAsyncThunk(
       const response = await shopAPI.createShop(shopData);
       return response.data || [];
     } catch (error) {
-      console.log(error)
       return rejectWithValue(error.message,
         "Failed to create shop"
       );
@@ -84,11 +83,8 @@ export const createWorker = createAsyncThunk(
   "shops/createWorker",
   async (workerData, { rejectWithValue }) => {
     try {
-      console.log("worker data at slice", workerData)
       const response = await shopAPI.createWorker(workerData);
-      console.log("at slice response ",response)
-      return [];
-      // return response.data.data;
+      return response.data;
     } catch (error) {
       return rejectWithValue(
         error.message || "Failed to create worker"
@@ -103,7 +99,6 @@ export const updateWorker = createAsyncThunk(
   async ({ id, data }, { rejectWithValue }) => {
     try {
       const response = await shopAPI.updateWorker(id, data);
-      console.log(response)
       return response.data || [];
     } catch (error) {
       return rejectWithValue(
@@ -134,7 +129,6 @@ export const updateWorkerPermissions = createAsyncThunk(
   async ({ id, permissions }, { rejectWithValue }) => {
     try {
       const response = await shopAPI.updateWorker(id, { permissions });
-      console.log(response)
       return response.data;
     } catch (error) {
       return rejectWithValue(

@@ -43,8 +43,6 @@ const Dropshipping = () => {
     (inv) => inv.invoiceType === INVOICE_TYPES.DROPSHIPPING
   );
 
-  console.log("dropshippingInvoices", dropshippingInvoices);
-
   // Filter by search term
   const filteredInvoices = dropshippingInvoices.filter(
     (inv) =>

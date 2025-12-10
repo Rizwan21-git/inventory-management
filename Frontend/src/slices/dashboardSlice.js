@@ -1,14 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { dashboardAPI } from '../services/api';
 
-
-// export const fetchDashboardStats = createAsyncThunk(
-//   "dashboard/fetchStats",
-//   async () => {
-//     return await dashboardAPI.getStats();
-//   }
-// );
-
 export const fetchDashboardStats = createAsyncThunk(
   "dashboard/fetchStats",
   async (params = {}) => {

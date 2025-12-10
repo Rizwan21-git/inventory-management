@@ -11,40 +11,51 @@ import invoiceRoutes from "./routes/invoice.route.js";
 import projectRoutes from "./routes/project.route.js";
 import expenseRoutes from "./routes/expense.route.js";
 import shopRoutes from "./routes/shop.route.js";
+import adminRoutes from "./routes/admin.route.js";
 import dashboardRoutes from "./routes/dashboard.route.js";
+import authRoutes from "./routes/auth.route.js";
 
 
 const app = express();
-app.use(cors());
+
+
+
+// CORS configuration
+const corsOptions = {
+  origin: "http://localhost:3000",
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  credentials: true,
+};
+// Enable CORS with the specified options
+
+app.use(cors(corsOptions));
 
 // Parse JSON data
 app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ limit: "5mb", extended: true }));
 
 // Use routes
-app.use("/inventory", inventoryRoutes);
-app.use("/invoices", invoiceRoutes);
-app.use("/projects", projectRoutes);
-app.use("/expenses", expenseRoutes);
-app.use("/shops", shopRoutes);
-app.use("/dashboard", dashboardRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/inventory", inventoryRoutes);
+app.use("/api/invoices", invoiceRoutes);
+app.use("/api/projects", projectRoutes);
+app.use("/api/expenses", expenseRoutes);
+app.use("/api/shops", shopRoutes);
+app.use("/api/admins", adminRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
-// CORS configuration
-// const corsOptions = {
-//   origin: "http://localhost:3000/",
-//   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-//   credentials: true,
-// };
-// Enable CORS with the specified options
 
 // Use error handling middleware
 app.use(errorHandler);
 
 // Define the port from environment variables or default to 5000
 const PORT = process.env.PORT || 5000;
+const MONGO_URI =
+  process.env.MONGO_URI || "mongodb://127.0.0.1:27017/inventory";
 
+// Connect to MongoDB
 mongoose
-  .connect("mongodb://127.0.0.1:27017/inventory")
+  .connect(MONGO_URI)
   .then(() => {
     // Start the server
     app.listen(PORT, () => {

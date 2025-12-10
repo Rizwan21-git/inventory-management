@@ -279,8 +279,6 @@ const Inventory = () => {
   // Get filtered items
   const filteredItems = getFilteredItems();
   
-  // console.log(items[1].image);
-  
   // Stats calculations using filtered data
   const totalItems = items?.length;
   const lowStockCount = items?.filter(

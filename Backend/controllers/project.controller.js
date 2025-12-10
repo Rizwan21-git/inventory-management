@@ -7,7 +7,6 @@ export const getAllProjects = asyncHandler(async (req, res, next) => {
 });
 
 export const addProject = asyncHandler(async (req, res, next) => {
-  console.log(req.body);
   const {
     projectName,
     siteLocation,

@@ -35,8 +35,6 @@ const Projects = () => {
   const { projects, loading, currentPage, totalPages, totalItems } =
     useSelector((state) => state.project);
 
-  // const [projects] = useState([]);
-
   // Local UI state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
@@ -100,11 +98,10 @@ const Projects = () => {
         ...formData,
         profit: parseFloat(formData.customerLabourCost || 0) - parseFloat(formData.workerPayment || 0),
       };
-      console.log(projectData);
       await dispatch(createProject(projectData)).unwrap();
       toast.success("Project created successfully!");
-      // setIsModalOpen(false);
-      // resetForm();
+      setIsModalOpen(false);
+      resetForm();
     } catch (error) {
       toast.error(error?.message || "Operation failed");
     }
@@ -115,6 +112,7 @@ const Projects = () => {
       try {
         await dispatch(deleteProject(id)).unwrap();
         toast.success("Project deleted successfully!");
+        // dispatch(fetchProjects({}));
       } catch (error) {
         toast.error("Failed to delete project");
       }

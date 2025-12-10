@@ -103,7 +103,7 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
     const interiorLowStock = interiorProducts.filter((p) => p.quantity > 0 && p.quantity <= 10).length;
     const interiorInStock = interiorProducts.filter((p) => p.quantity > 10).length;
     // Total items considered for the section: inStock + lowStock (exclude out-of-stock)
-    const interiorCount = interiorInStock + interiorLowStock;
+    const interiorCount = interiorInStock + interiorLowStock + interiorOutOfStock;
 
     // Calculate monthly revenue breakdown (selling + dropshipping only)
     const monthly = [];
@@ -190,7 +190,7 @@ export const getAvailableYears = asyncHandler(async (req, res) => {
 export const getRecentActivity = asyncHandler(async (req, res) => {
   try {
     // Get recent invoices
-    const recentInvoices = await Invoice.find()
+    const recentInvoices = await Invoice.find({_id: 0, invoiceNumber : 1, name: 1, total: 1, paymentStatus: 1})
       .sort({ createdAt: -1 })
       .limit(10);
 

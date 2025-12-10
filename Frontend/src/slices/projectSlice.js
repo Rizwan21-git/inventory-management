@@ -19,9 +19,18 @@ export const createProject = createAsyncThunk(
   }
 );
 
-export const deleteProject = createAsyncThunk("project/delete", async (id) => {
-  return await projectAPI.delete(id);
-});
+export const deleteProject = createAsyncThunk(
+  "project/delete",
+  async (id, { rejectWithValue }) => {
+    try {
+      const res = await projectAPI.delete(id);
+      // API returns the deleted project object; return the id so reducer can filter easily
+      return res?._id || id;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
 
 export const updateProjectStatus = createAsyncThunk(
   "project/updateStatus",
@@ -56,10 +65,12 @@ const projectSlice = createSlice({
         state.error = action.error.message;
       })
       .addCase(createProject.fulfilled, (state, action) => {
+        state.loading = false;
         state.projects.unshift(action.payload);
       })
       .addCase(deleteProject.fulfilled, (state, action) => {
-        state.projects = state.projects.filter((p) => p._id !== action.payload);
+        const deletedId = action.payload;
+        state.projects = state.projects.filter((p) => p._id !== deletedId);
       })
       .addCase(updateProjectStatus.fulfilled, (state, action) => {
         const index = state.projects.findIndex(

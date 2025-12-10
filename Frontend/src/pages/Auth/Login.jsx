@@ -8,7 +8,7 @@ import { toast } from "react-hot-toast";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
 const Login = () => {
-  const [credentials, setCredentials] = useState({ email: "", password: "" });
+  const [credentials, setCredentials] = useState({ username: "", password: "" });
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading, isAuthenticated, error } = useSelector(
@@ -23,20 +23,19 @@ const Login = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) {
+    if (token && isAuthenticated) {
       navigate("/");
     }
-  }, []);
-
- 
-
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log(credentials);
-      await dispatch(login(credentials)).unwrap();
-      localStorage.setItem("token", "json-web-token");
+      const response = await dispatch(login(credentials)).unwrap();
+      // Store token in localStorage
+      if (response.token) {
+        localStorage.setItem("token", response.token);
+      }
       toast.success("Login successful!");
       navigate("/");
     } catch (err) {
@@ -64,13 +63,13 @@ const Login = () => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <Input
-            label="Email"
-            type="email"
+            label="Username"
+            type="text"
             icon={FiMail}
-            placeholder="admin@example.com"
-            value={credentials.email}
+            placeholder="Enter your username"
+            value={credentials.username}
             onChange={(e) =>
-              setCredentials({ ...credentials, email: e.target.value })
+              setCredentials({ ...credentials, username: e.target.value })
             }
             required
           />
@@ -97,12 +96,6 @@ const Login = () => {
             Sign In
           </Button>
         </form>
-
-        <div className="mt-6 text-center">
-          {/* <p className="text-sm text-gray-500">
-            Demo: admin@example.com / password123
-          </p> */}
-        </div>
       </motion.div>
     </div>
   );

@@ -74,7 +74,6 @@ const Invoice = () => {
   useEffect(() => {
     dispatch(fetchInvoices());
   }, []);
-  console.log(trigger);
 
   // Filter invoices based on search term
   const filteredInvoices = invoices.filter(
@@ -93,7 +92,6 @@ const Invoice = () => {
 
   // Helper: Calculate line item price (selling and buying)
   const calculateLinePrice = (item) => {
-    console.log(item);
     const product = getSelectedProduct(item.productId);
     if (!product) return { sell: 0, buy: 0, quantity: item.quantity || 1 };
 

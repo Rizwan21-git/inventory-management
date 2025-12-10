@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL ="http://localhost:5000";
+const API_BASE_URL = "http://localhost:5000/api";
 
 // Create axios instance
 const api = axios.create({
@@ -28,8 +28,11 @@ api.interceptors.response.use(
   (response) => response.data,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
+      const currentPath = window.location.pathname;
+      if (currentPath !== "/login") {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error.response?.data || error.message);
   }
@@ -50,7 +53,7 @@ export const inventoryAPI = {
   create: (data) => api.post("/inventory", data),
   update: (id, data) => api.put(`/inventory/${id}`, data),
   delete: (id) => api.delete(`/inventory/${id}`),
-  getLowStock: ()=>api.get("/inventory/lowStock", {}),
+  getLowStock: () => api.get("/inventory/lowStock", {}),
   updateStock: (id, data) => api.patch(`/inventory/${id}/stock`, data),
 };
 
@@ -75,21 +78,18 @@ export const invoiceAPI = {
 
 // Expense APIs
 export const expenseAPI = {
-  getAll: ()=> api.get("/expenses"),
-  create: (data)=> api.post("/expenses", data),
-  delete: (id)=> api.delete(`/expenses/${id}`)
-}
+  getAll: () => api.get("/expenses"),
+  create: (data) => api.post("/expenses", data),
+  delete: (id) => api.delete(`/expenses/${id}`),
+};
 
 // Project APIs
 export const projectAPI = {
   getAll: () => api.get("/projects"),
   getById: (id) => api.get(`/projects/${id}`),
   create: (data) => api.post("/projects", data),
-  // update: (id) => api.patch(`/projects/${id}`),
   delete: (id) => api.delete(`/projects/${id}`),
-  assignWorker: (id, workerId) =>
-    api.patch(`/projects/${id}/assign`, { workerId }),
-  updateStatus: (id, status) => api.patch(`/projects/${id}`,  status ),
+  updateStatus: (id, status) => api.patch(`/projects/${id}`, status),
 };
 
 // Dashboard APIs
@@ -111,9 +111,18 @@ export const shopAPI = {
   getWorkersByShop: (shopId) => api.get(`/shops/${shopId}/workers`),
   getAllWorkers: () => api.get("/shops/workers"),
   createWorker: (workerData) => api.post("/shops/workers", workerData),
-  updateWorker: (id, workerData) =>
-    api.put(`/shops/workers/${id}/permissions`, workerData),
+  updateWorker: (id, workerData) => api.put(`/shops/workers/${id}`, workerData),
   deleteWorker: (id) => api.delete(`/shops/workers/${id}`),
+};
+
+// Admin APIs
+export const adminAPI = {
+  getAllAdmins: () => api.get("/admins"),
+  getAdminById: (id) => api.get(`/admins/${id}`),
+  createAdmin: (adminData) => api.post("/admins", adminData),
+  updateAdmin: (id, adminData) => api.put(`/admins/${id}`, adminData),
+  deleteAdmin: (id) => api.delete(`/admins/${id}`),
+  // verifyAdminCredentials: (credentials) => api.post("/admins/verify", credentials),
 };
 
 export default api;

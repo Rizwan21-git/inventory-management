@@ -77,26 +77,22 @@ import { toast } from 'react-hot-toast';
 const Header = ({ onMenuClick }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  // const { user } = useSelector((state) => state.auth);
-  const user = {
-    name: "Muhammad Rizwan",
-    role:"Admin"
-  }
+  const { user } = useSelector((state) => state.auth);
 
-  const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const notifRef = useRef(null);
+  // const [isNotifOpen, setIsNotifOpen] = useState(false);
+  // const notifRef = useRef(null);
 
   // close notification dropdown on outside click
-  useEffect(() => {
-    const handler = (e) => {
-      if (!notifRef.current) return;
-      if (!notifRef.current.contains(e.target)) {
-        setIsNotifOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  // useEffect(() => {
+  //   // const handler = (e) => {
+  //   //   if (!notifRef.current) return;
+  //   //   if (!notifRef.current.contains(e.target)) {
+  //   //     setIsNotifOpen(false);
+  //   //   }
+  //   // };
+  //   // document.addEventListener('mousedown', handler);
+  //   // return () => document.removeEventListener('mousedown', handler);
+  // }, []);
 
   const handleLogout = async () => {
     try {
@@ -121,16 +117,15 @@ const Header = ({ onMenuClick }) => {
 
         {/* right: notifications + user */}
         <div className="relative flex items-center gap-4">
-          {/* notification bell */}
-          <button
+          {/* <button
             onClick={() => setIsNotifOpen((prev) => !prev)}
             className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <FiBell className="w-6 h-6 text-gray-600" />
             <span className="absolute top-1 right-1 w-2 h-2 bg-danger-500 rounded-full" />
-          </button>
+          </button> */}
 
-          {/* notification dropdown */}
+          {/* notification dropdown
           {isNotifOpen && (
             <div
               ref={notifRef}
@@ -147,16 +142,16 @@ const Header = ({ onMenuClick }) => {
                 Check back later.
               </div>
             </div>
-          )}
+          )} */}
 
           {/* user info */}
           <div className="flex items-center gap-3">
             <div className="text-right">
               <p className="text-sm font-medium text-gray-900">
-                {user?.name || 'Admin User'}
+                {user?.name || 'User'}
               </p>
               <p className="text-xs text-gray-500 capitalize">
-                {user?.role || 'admin'}
+                {user?.type === "admin" ? "Administrator" : user?.type === "shop" ? "Shop Manager" : "User"}
               </p>
             </div>
             <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">

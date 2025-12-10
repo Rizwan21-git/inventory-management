@@ -1,4 +1,5 @@
 import Shop from "../models/shopSchema.js";
+import Admin from "../models/adminSchema.js";
 import Worker from "../models/workerSchema.js";
 import bcrypt from "bcryptjs";
 
@@ -22,6 +23,13 @@ export const createShop = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Username already exists",
+      });
+    }
+    const existingAdmin = await Admin.findOne({ username });
+    if (existingAdmin) {
+      return res.status(400).json({
+        success: false,
+        message: "Username is not available",
       });
     }
 
@@ -119,7 +127,6 @@ export const updateShop = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, location, username, password } = req.body;
-
     const shop = await Shop.findById(id);
     if (!shop) {
       return res.status(404).json({
@@ -142,15 +149,14 @@ export const updateShop = async (req, res) => {
     if (location) shop.location = location;
     if (username) shop.username = username;
 
-    if (password) {
-      const salt = await bcrypt.genSalt(10);
-      const hashed = await bcrypt.hash(password, salt);
-      shop.password = hashed;
+    // Only set new password if user provided it
+    if (password && password.trim()) {
+      shop.password = password; // plain text, hook will hash on save
     }
 
-    await shop.save();
+    const s = await shop.save();
 
-    const shopData = shop.toObject();
+    const shopData = s.toObject();
     delete shopData.password;
 
     res.status(200).json({
@@ -159,12 +165,14 @@ export const updateShop = async (req, res) => {
       data: shopData,
     });
   } catch (error) {
+    console.error("Update error:", error);
     res.status(500).json({
       success: false,
       message: error.message,
     });
   }
 };
+
 
 export const deleteShop = async (req, res) => {
   try {
@@ -193,62 +201,61 @@ export const deleteShop = async (req, res) => {
   }
 };
 
-export const verifyShopCredentials = async (req, res) => {
-  try {
-    const { username, password } = req.body;
+// export const verifyShopCredentials = async (req, res) => {
+//   try {
+//     const { username, password } = req.body;
 
-    if (!username || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Username and password are required",
-      });
-    }
+//     if (!username || !password) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Username and password are required",
+//       });
+//     }
 
-    // Find shop with username (need to select password)
-    const shop = await Shop.findOne({ username }).select("+password");
+//     // Find shop with username (need to select password)
+//     const shop = await Shop.findOne({ username }).select("+password");
 
-    if (!shop) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials",
-      });
-    }
+//     if (!shop) {
+//       return res.status(401).json({
+//         success: false,
+//         message: "Invalid credentials",
+//       });
+//     }
 
-    // Compare passwords
-    const isPasswordValid = await bcrypt.compare(password, shop.password);
+//     // Compare passwords
+//     const isPasswordValid = await bcrypt.compare(password, shop.password);
 
-    if (!isPasswordValid) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials",
-      });
-    }
+//     if (!isPasswordValid) {
+//       return res.status(401).json({
+//         success: false,
+//         message: "Invalid credentials",
+//       });
+//     }
 
-    const shopData = shop.toObject();
-    delete shopData.password;
+//     const shopData = shop.toObject();
+//     delete shopData.password;
 
-    res.status(200).json({
-      success: true,
-      message: "Credentials verified successfully",
-      data: shopData,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+//     res.status(200).json({
+//       success: true,
+//       message: "Credentials verified successfully",
+//       data: shopData,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
 
 // ========== WORKER CONTROLLERS ==========
 
 
 export const createWorker = async (req, res) => {
   try {
-    const { name, phone, email, role, salary, joinDate, shopId, permissions } =
-      req.body;
+    const { name, phone, email, salary, joinDate, shopId } = req.body;
     // Validate required fields
-    if (!name || !phone || !email || !role || !salary || !shopId) {
+    if (!name || !phone || !email || !salary || !shopId) {
       return res.status(400).json({
         success: false,
         message: "All required fields must be provided",
@@ -276,28 +283,16 @@ export const createWorker = async (req, res) => {
       });
     }
 
-    // Create worker
+    // Create worker (no role or permissions - inherited from shop)
     const newWorker = new Worker({
       name,
       phone,
       email: email.toLowerCase(),
-      role,
       salary,
       joinDate: joinDate || new Date(),
       shopId,
-      permissions: permissions || {
-        dashboard: false,
-        inventory: false,
-        invoices: false,
-        finance: false,
-        quotation: false,
-        projects: false,
-        dropshipping: false,
-        investment: false,
-        expenses: false,
-      },
     });
-    const addedWorker = await newWorker.save()
+    const addedWorker = await newWorker.save();
     // Update shop worker count
     shop.workerCount = await Worker.countDocuments({ shopId });
     await shop.save();
@@ -374,7 +369,7 @@ export const getWorkerById = async (req, res) => {
 export const updateWorker = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, phone, email, role, salary, joinDate } = req.body;
+    const { name, phone, email, salary, joinDate } = req.body;
 
     const worker = await Worker.findById(id);
     if (!worker) {
@@ -398,11 +393,10 @@ export const updateWorker = async (req, res) => {
       }
     }
 
-    // Update fields
+    // Update fields (no role or permissions)
     if (name) worker.name = name;
     if (phone) worker.phone = phone;
     if (email) worker.email = email.toLowerCase();
-    if (role) worker.role = role;
     if (salary) worker.salary = salary;
     if (joinDate) worker.joinDate = joinDate;
 
@@ -411,48 +405,6 @@ export const updateWorker = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Worker updated successfully",
-      data: worker,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-/**
- * Update worker permissions
- * @route PUT /api/workers/:id/permissions
- */
-export const updateWorkerPermissions = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { permissions } = req.body;
-
-    if (!permissions) {
-      return res.status(400).json({
-        success: false,
-        message: "Permissions object is required",
-      });
-    }
-
-    const worker = await Worker.findByIdAndUpdate(
-      id,
-      { permissions },
-      { new: true, runValidators: true }
-    );
-
-    if (!worker) {
-      return res.status(404).json({
-        success: false,
-        message: "Worker not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Permissions updated successfully",
       data: worker,
     });
   } catch (error) {

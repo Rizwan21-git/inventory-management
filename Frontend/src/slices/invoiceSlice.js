@@ -101,7 +101,6 @@ const invoiceSlice = createSlice({
       .addCase(createInvoice.fulfilled, (state, action) => {
         state.trigger = !state.trigger;
         state.invoices.unshift(action.payload);
-        console.log(state.payload);
       })
       .addCase(updateInvoice.fulfilled, (state, action) => {
         const index = state.invoices.findIndex(

@@ -32,7 +32,6 @@ const Expenses = () => {
   const { expenses, loading, totalItems } = useSelector(
     (state) => state.expense
   );
-  console.log(expenses);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filterCategory, setFilterCategory] = useState("");
@@ -75,7 +74,6 @@ const Expenses = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log(formData);
       await dispatch(createExpense(formData)).unwrap();
       toast.success("Expense added successfully!");
       setIsModalOpen(false);
@@ -317,14 +315,14 @@ const Expenses = () => {
           setSelectedRecord(null);
         }}
         title="Payment Proof"
-        size="lg"
+        size="md"
       >
         {selectedRecord?.proof ? (
           <div className="space-y-4">
             <img
               src={selectedRecord.proof}
               alt="Payment Proof"
-              className="w-full rounded-lg"
+              className="w-full h-96 rounded-lg"
             />
             <div className="text-sm text-gray-600">
               <p>

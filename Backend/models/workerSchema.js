@@ -16,11 +16,6 @@ const workerSchema = new mongoose.Schema(
       required: [true, "Email is required"],
       lowercase: true,
     },
-    role: {
-      type: String,
-      enum: ["Senior", "Junior", "Manager", "Supervisor", "Trainee"],
-      default: "Junior",
-    },
     salary: {
       type: Number,
       required: [true, "Salary is required"],
@@ -34,44 +29,6 @@ const workerSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Shop",
       required: [true, "Shop ID is required"],
-    },
-    permissions: {
-      dashboard: {
-        type: Boolean,
-        default: false,
-      },
-      inventory: {
-        type: Boolean,
-        default: false,
-      },
-      invoices: {
-        type: Boolean,
-        default: false,
-      },
-      finance: {
-        type: Boolean,
-        default: false,
-      },
-      quotation: {
-        type: Boolean,
-        default: false,
-      },
-      projects: {
-        type: Boolean,
-        default: false,
-      },
-      dropshipping: {
-        type: Boolean,
-        default: false,
-      },
-      investment: {
-        type: Boolean,
-        default: false,
-      },
-      expenses: {
-        type: Boolean,
-        default: false,
-      },
     },
   },
   {

@@ -89,7 +89,6 @@ export const getPendingInvoices = asyncHandler(async (req, res, next) => {
 export const updateInvoice = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const data = req.body;
-  console.log("at controller", id, data);
   const updatedInvoice = await Invoice.findByIdAndUpdate(id, data, {
     new: true,
   });

@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useSelector } from "react-redux";
 import {
   FiHome,
   FiPackage,
@@ -13,18 +14,35 @@ import {
 } from "react-icons/fi";
 
 const Sidebar = ({ isOpen }) => {
-  const menuItems = [
-    { path: "/", label: "Dashboard", icon: FiHome },
-    { path: "/inventory", label: "Inventory", icon: FiPackage },
-    { path: "/finance", label: "Finance", icon: FiDollarSign },
-    { path: "/invoices", label: "Invoices", icon: FiFileText },
-    { path: "/quotation", label: "Quotations", icon: FiFileText },
-    { path: "/projects", label: "Projects", icon: FiBriefcase },
-    { path: "/dropshipping", label: "Dropshipping", icon: FiTruck },
-    { path: "/investment", label: "Investment", icon: FiTrendingUp },
-    { path: "/expenses", label: "Expenses", icon: FiCreditCard },
-    { path: "/shopManagement", label: "Shop Management", icon: FiShoppingBag },
+  const { user } = useSelector((state) => state.auth);
+
+  // All menu items with role-based visibility
+  const allMenuItems = [
+    { path: "/", label: "Dashboard", icon: FiHome, roles: ["admin"] },
+    { path: "/inventory", label: "Inventory", icon: FiPackage, roles: ["admin", "shop"] },
+    { path: "/finance", label: "Finance", icon: FiDollarSign, roles: ["admin"] },
+    { path: "/invoices", label: "Invoices", icon: FiFileText, roles: ["admin", "shop"] },
+    { path: "/quotation", label: "Quotations", icon: FiFileText, roles: ["admin", "shop"] },
+    { path: "/projects", label: "Projects", icon: FiBriefcase, roles: ["admin", "shop"] },
+    { path: "/dropshipping", label: "Dropshipping", icon: FiTruck, roles: ["admin"] },
+    { path: "/investment", label: "Investment", icon: FiTrendingUp, roles: ["admin"] },
+    { path: "/expenses", label: "Expenses", icon: FiCreditCard, roles: ["admin", "shop"] },
+    { path: "/shopManagement", label: "Shop Management", icon: FiShoppingBag, roles: ["admin"] },
   ];
+
+  // Filter menu items based on user type and permissions
+  const getVisibleMenuItems = () => {
+    if (!user) return [];
+
+    const userRole = user.userType || user.type || "shop";
+
+    return allMenuItems.filter((item) => {
+      // Check if user's role is allowed for this menu item
+      return item.roles.includes(userRole);
+    });
+  };
+
+  const menuItems = getVisibleMenuItems();
 
   return (
     <motion.aside

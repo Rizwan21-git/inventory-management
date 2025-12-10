@@ -12,7 +12,6 @@ import {
   FiLock,
   FiEye,
   FiEyeOff,
-  FiCheck,
   FiCopy,
 } from "react-icons/fi";
 import {
@@ -24,32 +23,21 @@ import {
   updateWorker,
   deleteWorker,
   fetchWorkersByShop,
-  // updateWorkerPermissions,
   setSelectedShop,
   clearSelectedShop,
-  updateWorkerPermissions,
 } from "../../slices/shopSlice";
+import {
+  fetchAdmins,
+  createAdmin,
+  updateAdmin,
+  deleteAdmin,
+} from "../../slices/adminSlice";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
 import Modal from "../../components/common/Modal";
-import Badge from "../../components/common/Badge";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import { toast } from "react-hot-toast";
-
-const ROLES = ["Senior", "Junior", "Manager", "Supervisor", "Trainee"];
-
-const PERMISSIONS = [
-  { id: "dashboard", label: "Dashboard", icon: "📊" },
-  { id: "inventory", label: "Inventory", icon: "📦" },
-  { id: "invoices", label: "Invoices", icon: "🧾" },
-  { id: "finance", label: "Finance", icon: "💰" },
-  { id: "quotation", label: "Quotation", icon: "📝" },
-  { id: "projects", label: "Projects", icon: "🎯" },
-  { id: "dropshipping", label: "Dropshipping", icon: "🚚" },
-  { id: "investment", label: "Investment", icon: "📈" },
-  { id: "expenses", label: "Expenses", icon: "💳" },
-];
 
 const ShopManagement = () => {
   const dispatch = useDispatch();
@@ -57,16 +45,21 @@ const ShopManagement = () => {
   // Redux selectors
   const { shops, workers, selectedShop, loading, workersLoading, error } =
     useSelector((state) => state.shops);
+  const { admins, loading: adminsLoading } = useSelector(
+    (state) => state.admins
+  );
 
   // Local UI state only
   const [isShopModalOpen, setIsShopModalOpen] = useState(false);
   const [isWorkerModalOpen, setIsWorkerModalOpen] = useState(false);
-  const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [editingShop, setEditingShop] = useState(null);
   const [editingWorker, setEditingWorker] = useState(null);
+  const [editingAdmin, setEditingAdmin] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showShopPassword, setShowShopPassword] = useState({});
-  const [workersSum, setworkersSum] = useState(0);
+  const [showAdminPassword, setShowAdminPassword] = useState({});
+  const [activeTab, setActiveTab] = useState("shops"); // 'shops' or 'admins'
 
   // Shop Form Data
   const [shopFormData, setShopFormData] = useState({
@@ -76,31 +69,31 @@ const ShopManagement = () => {
     password: "",
   });
 
-  // Worker Form Data
+  // Worker Form Data (simplified - no role or permissions)
   const [workerFormData, setWorkerFormData] = useState({
     name: "",
     phone: "",
     email: "",
-    role: "Junior",
     salary: "",
     joinDate: new Date().toISOString().split("T")[0],
     shopId: "",
-    permissions: {},
   });
+
+  // Admin Form Data
+  const [adminFormData, setAdminFormData] = useState({
+    name: "",
+    username: "",
+    email: "",
+    password: "",
+    role: "Admin",
+  });
+
 
   // Initial load
   useEffect(() => {
     dispatch(fetchShops());
+    dispatch(fetchAdmins());
   }, [dispatch]);
-
-  // Initialize permissions object
-  const initializePermissions = () => {
-    const perms = {};
-    PERMISSIONS.forEach((p) => {
-      perms[p.id] = false;
-    });
-    return perms;
-  };
 
   // ========== SHOP HANDLERS ==========
 
@@ -139,7 +132,7 @@ const ShopManagement = () => {
       name: shop.name,
       location: shop.location,
       username: shop.username || "",
-      password: shop.password || "",
+      password: "", // Leave password empty for edit - only update if user enters new one
     });
     setIsShopModalOpen(true);
   };
@@ -203,7 +196,6 @@ const ShopManagement = () => {
       resetWorkerForm();
       dispatch(fetchWorkersByShop(selectedShop._id));
     } catch (error) {
-      console.log(error);
       toast.error(error || "Operation failed");
     }
   };
@@ -214,60 +206,11 @@ const ShopManagement = () => {
       name: worker.name,
       phone: worker.phone,
       email: worker.email,
-      role: worker.role,
       salary: worker.salary,
       joinDate: worker.joinDate.split("T")[0],
       shopId: worker.shopId._id || worker.shopId,
-      permissions: worker.permissions || initializePermissions(),
     });
     setIsWorkerModalOpen(true);
-  };
-
-  const handleEditPermissions = (worker) => {
-    setEditingWorker(worker);
-    setWorkerFormData({
-      name: worker.name,
-      phone: worker.phone,
-      email: worker.email,
-      role: worker.role,
-      salary: worker.salary,
-      joinDate: worker.joinDate.split("T")[0],
-      shopId: worker.shopId._id || worker.shopId,
-      permissions: worker.permissions || initializePermissions(),
-    });
-    setIsPermissionsModalOpen(true);
-  };
-
-  const handleTogglePermission = (permissionId) => {
-    setWorkerFormData({
-      ...workerFormData,
-      permissions: {
-        ...workerFormData.permissions,
-        [permissionId]: !workerFormData.permissions[permissionId],
-      },
-    });
-  };
-
-  const handleSavePermissions = async () => {
-    if (!editingWorker) {
-      toast.error("No worker selected");
-      return;
-    }
-
-    try {
-      await dispatch(
-        updateWorkerPermissions({
-          id: editingWorker._id,
-          permissions: workerFormData.permissions,
-        })
-      ).unwrap();
-      toast.success("Permissions updated successfully!");
-      setIsPermissionsModalOpen(false);
-      setEditingWorker(null);
-      dispatch(fetchWorkersByShop(selectedShop._id)); // Refresh workers list
-    } catch (error) {
-      toast.error(error || "Failed to update permissions");
-    }
   };
 
   const handleDeleteWorker = async (id) => {
@@ -287,11 +230,9 @@ const ShopManagement = () => {
       name: "",
       phone: "",
       email: "",
-      role: "Junior",
       salary: "",
       joinDate: new Date().toISOString().split("T")[0],
       shopId: "",
-      permissions: initializePermissions(),
     });
     setEditingWorker(null);
   };
@@ -304,34 +245,75 @@ const ShopManagement = () => {
   const handleBackToShops = () => {
     dispatch(clearSelectedShop());
     dispatch(fetchShops());
+  };
 
+  // ========== ADMIN HANDLERS ==========
+
+  const handleAdminSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!editingAdmin && (!adminFormData.username || !adminFormData.password)) {
+      toast.error("Username and password are required");
+      return;
+    }
+
+    try {
+      if (editingAdmin) {
+        await dispatch(
+          updateAdmin({
+            id: editingAdmin._id,
+            data: adminFormData,
+          })
+        ).unwrap();
+        toast.success("Admin updated successfully!");
+      } else {
+        await dispatch(createAdmin(adminFormData)).unwrap();
+        toast.success("Admin added successfully!");
+      }
+      setIsAdminModalOpen(false);
+      resetAdminForm();
+    } catch (error) {
+      toast.error(error || "Operation failed");
+    }
+  };
+
+  const handleEditAdmin = (admin) => {
+    setEditingAdmin(admin);
+    setAdminFormData({
+      name: admin.name,
+      username: admin.username,
+      email: admin.email,
+      password: "",
+      role: admin.role,
+    });
+    setIsAdminModalOpen(true);
+  };
+
+  const handleDeleteAdmin = async (id) => {
+    if (window.confirm("Are you sure you want to delete this admin?")) {
+      try {
+        await dispatch(deleteAdmin(id)).unwrap();
+        toast.success("Admin deleted successfully!");
+      } catch (error) {
+        toast.error(error || "Failed to delete admin");
+      }
+    }
+  };
+
+  const resetAdminForm = () => {
+    setAdminFormData({
+      name: "",
+      username: "",
+      email: "",
+      password: "",
+      role: "Admin",
+    });
+    setEditingAdmin(null);
   };
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
     toast.success("Copied to clipboard!");
-  };
-
-  const getRoleBadgeVariant = (role) => {
-    switch (role) {
-      case "senior":
-        return "success";
-      case "manager":
-        return "primary";
-      case "supervisor":
-        return "info";
-      case "junior":
-        return "warning";
-      case "trainee":
-        return "secondary";
-      default:
-        return "default";
-    }
-  };
-
-  const getEnabledPermissions = (permissions) => {
-    return Object.entries(permissions || {}).filter(([_, enabled]) => enabled)
-      .length;
   };
 
   let workersCount = 0;
@@ -341,8 +323,6 @@ const ShopManagement = () => {
     })
     return workersCount;
   }
-
-
 
   // Statistics
   const stats = [
@@ -358,12 +338,18 @@ const ShopManagement = () => {
       icon: FiUsers,
       color: "success",
     },
+    {
+      label: "Total Admins",
+      value: admins?.length || 0,
+      icon: FiLock,
+      color: "warning",
+    },
   ];
 
   return (
     <div>
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      {/* Header with Tabs */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
             {selectedShop ? (
@@ -371,17 +357,24 @@ const ShopManagement = () => {
                 <FiUsers className="text-primary-600" />
                 {selectedShop.name} - Workers
               </>
-            ) : (
+            ) : activeTab === "shops" ? (
               <>
                 <FiShoppingBag className="text-primary-600" />
                 Shop Management
+              </>
+            ) : (
+              <>
+                <FiLock className="text-primary-600" />
+                Admin Management
               </>
             )}
           </h1>
           <p className="text-gray-600 mt-1">
             {selectedShop
-              ? "Manage workers and assign permissions"
-              : "Manage shops and their workforce"}
+              ? "Manage workers"
+              : activeTab === "shops"
+              ? "Manage shops and their workforce"
+              : "Manage system administrators"}
           </p>
         </div>
 
@@ -395,27 +388,60 @@ const ShopManagement = () => {
               Back to Shops
             </Button>
           )}
+          {!selectedShop && (
+            <div className="flex gap-2 border-b">
+              <button
+                onClick={() => setActiveTab("shops")}
+                className={`px-4 py-2 font-medium transition-colors ${
+                  activeTab === "shops"
+                    ? "text-primary-600 border-b-2 border-primary-600"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                <FiShoppingBag className="inline mr-2 w-4 h-4" />
+                Shops
+              </button>
+              <button
+                onClick={() => setActiveTab("admins")}
+                className={`px-4 py-2 font-medium transition-colors ${
+                  activeTab === "admins"
+                    ? "text-primary-600 border-b-2 border-primary-600"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                <FiLock className="inline mr-2 w-4 h-4" />
+                Admins
+              </button>
+            </div>
+          )}
           <Button
             icon={FiPlus}
             onClick={() => {
               if (selectedShop) {
                 resetWorkerForm();
                 setIsWorkerModalOpen(true);
-              } else {
+              } else if (activeTab === "shops") {
                 resetShopForm();
                 setIsShopModalOpen(true);
+              } else {
+                resetAdminForm();
+                setIsAdminModalOpen(true);
               }
             }}
             className="w-full md:w-auto"
           >
-            {selectedShop ? "Add Worker" : "Add Shop"}
+            {selectedShop
+              ? "Add Worker"
+              : activeTab === "shops"
+              ? "Add Shop"
+              : "Add Admin"}
           </Button>
         </div>
       </div>
 
       {/* Statistics - Only show when viewing shops */}
       {!selectedShop && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           {stats.map((stat) => (
             <Card key={stat.label}>
               <div className="flex items-center justify-between">
@@ -436,8 +462,8 @@ const ShopManagement = () => {
         </div>
       )}
 
-      {/* Shops Grid or Workers Grid */}
-      {!selectedShop ? (
+      {/* Shops Grid, Workers Grid, or Admins Grid */}
+      {!selectedShop && activeTab === "shops" ? (
         // Shops Grid
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {loading ? (
@@ -554,6 +580,117 @@ const ShopManagement = () => {
             ))
           )}
         </div>
+      ) : !selectedShop && activeTab === "admins" ? (
+        // Admins Grid
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {!admins || admins.length === 0 ? (
+            <Card className="col-span-full py-12">
+              <div className="text-center text-gray-500">
+                No admins found. Add your first admin to get started!
+              </div>
+            </Card>
+          ) : (
+            admins.map((admin) => (
+              <Card
+                key={admin._id}
+                className="hover:shadow-lg transition-shadow"
+              >
+                <div className="space-y-4">
+                  {/* Admin Header */}
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {admin.name}
+                      </h3>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {admin.role}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Admin Credentials */}
+                  <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
+                    <div className="flex items-center gap-2 text-sm font-medium text-purple-900 mb-2">
+                      <FiLock className="w-4 h-4" />
+                      Admin Credentials
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <div>
+                        <p className="text-xs text-gray-600">Username</p>
+                        <div className="flex items-center justify-between bg-white rounded p-2">
+                          <span className="text-gray-700 font-mono text-xs">
+                            {admin.username}
+                          </span>
+                          <button
+                            onClick={() => copyToClipboard(admin.username)}
+                            className="text-purple-600 hover:text-purple-700 transition-colors"
+                          >
+                            <FiCopy className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">Email</p>
+                        <div className="flex items-center justify-between bg-white rounded p-2">
+                          <span className="text-gray-700 font-mono text-xs">
+                            {admin.email}
+                          </span>
+                          <button
+                            onClick={() => copyToClipboard(admin.email)}
+                            className="text-purple-600 hover:text-purple-700 transition-colors"
+                          >
+                            <FiCopy className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">Password</p>
+                        <div className="flex items-center justify-between bg-white rounded p-2">
+                          <span className="text-gray-700 font-mono text-xs">
+                            {showAdminPassword[admin._id]
+                              ? admin.password
+                              : "••••••••"}
+                          </span>
+                          <button
+                            onClick={() =>
+                              setShowAdminPassword({
+                                ...showAdminPassword,
+                                [admin._id]: !showAdminPassword[admin._id],
+                              })
+                            }
+                            className="text-purple-600 hover:text-purple-700 transition-colors"
+                          >
+                            {showAdminPassword[admin._id] ? (
+                              <FiEyeOff className="w-4 h-4" />
+                            ) : (
+                              <FiEye className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2 border-t pt-4">
+                    <button
+                      onClick={() => handleEditAdmin(admin)}
+                      className="flex-1 p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                    >
+                      <FiEdit2 className="w-4 h-4 inline mr-2" /> Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteAdmin(admin._id)}
+                      className="flex-1 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <FiTrash2 className="w-4 h-4 inline mr-2" /> Delete
+                    </button>
+                  </div>
+                </div>
+              </Card>
+            ))
+          )}
+        </div>
       ) : (
         // Workers Grid
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -580,11 +717,6 @@ const ShopManagement = () => {
                       <h3 className="text-lg font-semibold text-gray-900">
                         {worker.name}
                       </h3>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Badge variant={getRoleBadgeVariant(worker.role)}>
-                          {worker.role}
-                        </Badge>
-                      </div>
                     </div>
                   </div>
 
@@ -608,61 +740,19 @@ const ShopManagement = () => {
                     </div>
                   </div>
 
-                  {/* Permissions Summary */}
-                  <div className="border-t pt-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm font-medium text-gray-700">
-                        Permissions
-                      </span>
-                      <Badge variant="info">
-                        {getEnabledPermissions(worker.permissions)}/
-                        {PERMISSIONS.length}
-                      </Badge>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {Object.entries(worker.permissions || {}).map(
-                        ([permId, enabled]) => {
-                          const perm = PERMISSIONS.find((p) => p.id === permId);
-                          return enabled ? (
-                            <span
-                              key={permId}
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
-                            >
-                              <FiCheck className="w-3 h-3" />
-                              {perm?.label}
-                            </span>
-                          ) : null;
-                        }
-                      )}
-                    </div>
-                    {getEnabledPermissions(worker.permissions) === 0 && (
-                      <p className="text-xs text-gray-500 mt-2">
-                        No permissions assigned
-                      </p>
-                    )}
-                  </div>
-
                   {/* Actions */}
                   <div className="flex gap-2 border-t pt-4">
-                    <Button
-                      onClick={() => handleEditPermissions(worker)}
-                      variant="outline"
-                      className="flex-1"
-                      size="sm"
-                    >
-                      Manage Permissions
-                    </Button>
                     <button
                       onClick={() => handleEditWorker(worker)}
-                      className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                      className="flex-1 p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
                     >
-                      <FiEdit2 className="w-4 h-4" />
+                      <FiEdit2 className="w-4 h-4 inline mr-2" /> Edit
                     </button>
                     <button
                       onClick={() => handleDeleteWorker(worker._id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="flex-1 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     >
-                      <FiTrash2 className="w-4 h-4" />
+                      <FiTrash2 className="w-4 h-4 inline mr-2" /> Delete
                     </button>
                   </div>
                 </div>
@@ -846,40 +936,18 @@ const ShopManagement = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Role
-              </label>
-              <select
-                required
-                value={workerFormData.role}
-                onChange={(e) =>
-                  setWorkerFormData({ ...workerFormData, role: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              >
-                {ROLES.map((role) => (
-                  <option key={role} value={role}>
-                    {role}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <Input
-              label="Salary (PKR)"
-              type="number"
-              required
-              min="0"
-              step="1000"
-              value={workerFormData.salary}
-              onChange={(e) =>
-                setWorkerFormData({ ...workerFormData, salary: e.target.value })
-              }
-              placeholder="50000"
-            />
-          </div>
+          <Input
+            label="Salary (PKR)"
+            type="number"
+            required
+            min="0"
+            step="1000"
+            value={workerFormData.salary}
+            onChange={(e) =>
+              setWorkerFormData({ ...workerFormData, salary: e.target.value })
+            }
+            placeholder="50000"
+          />
 
           <Input
             label="Join Date"
@@ -896,58 +964,106 @@ const ShopManagement = () => {
         </form>
       </Modal>
 
-      {/* Permissions Modal */}
+      {/* Admin Modal */}
       <Modal
-        isOpen={isPermissionsModalOpen}
+        isOpen={isAdminModalOpen}
         onClose={() => {
-          setIsPermissionsModalOpen(false);
-          setEditingWorker(null);
+          setIsAdminModalOpen(false);
+          resetAdminForm();
         }}
-        title={`Manage Permissions - ${editingWorker?.name || ""}`}
+        title={editingAdmin ? "Edit Admin" : "Add New Admin"}
         size="lg"
         footer={
           <>
             <Button
               variant="outline"
               onClick={() => {
-                setIsPermissionsModalOpen(false);
-                setEditingWorker(null);
+                setIsAdminModalOpen(false);
+                resetAdminForm();
               }}
             >
               Cancel
             </Button>
-            <Button onClick={handleSavePermissions} disabled={workersLoading}>
-              {workersLoading ? "Saving..." : "Save Permissions"}
+            <Button onClick={handleAdminSubmit}>
+              {editingAdmin ? "Update Admin" : "Add Admin"}
             </Button>
           </>
         }
       >
-        <div className="space-y-3">
-          <p className="text-sm text-gray-600 mb-4">
-            Select which modules this worker can access:
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {PERMISSIONS.map((permission) => (
-              <label
-                key={permission.id}
-                className="flex items-center p-3 rounded-lg border-2 border-gray-200 hover:border-primary-300 hover:bg-primary-50 cursor-pointer transition-all"
-              >
-                <input
-                  type="checkbox"
-                  checked={workerFormData.permissions[permission.id] || false}
-                  onChange={() => handleTogglePermission(permission.id)}
-                  className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-2 focus:ring-primary-500 cursor-pointer"
-                />
-                <span className="flex items-center gap-2 ml-3">
-                  <span className="text-lg">{permission.icon}</span>
-                  <span className="text-sm font-medium text-gray-900">
-                    {permission.label}
-                  </span>
-                </span>
-              </label>
-            ))}
+        <form onSubmit={handleAdminSubmit}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
+            <Input
+              label="Admin Name"
+              required
+              value={adminFormData.name}
+              onChange={(e) =>
+                setAdminFormData({ ...adminFormData, name: e.target.value })
+              }
+              placeholder="Enter admin name"
+            />
+
+            <Input
+              label="Email"
+              type="email"
+              required
+              value={adminFormData.email}
+              onChange={(e) =>
+                setAdminFormData({ ...adminFormData, email: e.target.value })
+              }
+              placeholder="admin@example.com"
+            />
           </div>
-        </div>
+
+          <div className="border-t pt-4 mt-4">
+            <h4 className="text-sm font-semibold text-gray-900 mb-4">
+              Admin Credentials
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-7">
+              <Input
+                label="Username"
+                required
+                value={adminFormData.username}
+                onChange={(e) =>
+                  setAdminFormData({ ...adminFormData, username: e.target.value })
+                }
+                placeholder="Enter admin username"
+                icon={FiLock}
+              />
+
+              <div className="relative">
+                <Input
+                  label="Password"
+                  required={!editingAdmin}
+                  type={showPassword ? "text" : "password"}
+                  value={adminFormData.password}
+                  onChange={(e) =>
+                    setAdminFormData({
+                      ...adminFormData,
+                      password: e.target.value,
+                    })
+                  }
+                  placeholder={
+                    editingAdmin
+                      ? "Leave blank if you do not want to update"
+                      : "Enter admin password"
+                  }
+                  icon={FiLock}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-10 text-gray-500 hover:text-gray-700"
+                >
+                  {showPassword ? (
+                    <FiEyeOff className="w-4 h-4" />
+                  ) : (
+                    <FiEye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
       </Modal>
     </div>
   );

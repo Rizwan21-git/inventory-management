@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { getCurrentUser } from "./slices/authSlice";
 import Layout from "./components/layout/Layout";
+import ProtectedRoute from "./components/common/ProtectedRoute";
 import LoadingSpinner from "./components/common/LoadingSpinner";
 
 // lazy loadung
@@ -21,21 +22,11 @@ const ShopManagement = lazy(() =>
 );
 const Login = lazy(() => import("./pages/Auth/Login"));
 
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useSelector((state) => state.auth);
-
-  // if (loading) {
-  //   return <LoadingSpinner fullScreen />;
-  // }
-
-  // return isAuthenticated ? children : <Navigate to="/login" replace />;
-  return children;
-};
-
 function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {
     if (token) {
@@ -45,91 +36,132 @@ function App() {
     }
   }, [dispatch, token]);
 
+  // Determine home page based on user role
+  const getHomePage = () => {
+    const userRole = user?.userType || user?.type || user?.role;
+    if (userRole === "admin") {
+      return <Dashboard />;
+    } else if (userRole === "shop") {
+      return <Inventory />;
+    }
+    return <Dashboard />; // fallback
+  };
+
   return (
     <Suspense fallback={<LoadingSpinner fullScreen />}>
       <Routes>
         <Route path="/" element={<Layout />}>
+          {/* Home route - role-based redirect */}
           <Route
             index
             element={
               <ProtectedRoute>
+                {getHomePage()}
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Dashboard - Admin only */}
+          <Route
+            path="dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
                 <Dashboard />
               </ProtectedRoute>
             }
           />
+
+          {/* Inventory - Both Admin and Shop */}
           <Route
             path="inventory"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["admin", "shop"]}>
                 <Inventory />
               </ProtectedRoute>
             }
           />
+
+          {/* Finance - Admin only */}
           <Route
             path="finance"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["admin"]}>
                 <Finance />
               </ProtectedRoute>
             }
           />
+
+          {/* Invoices - Both Admin and Shop */}
           <Route
             path="invoices"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["admin", "shop"]}>
                 <Invoice />
               </ProtectedRoute>
             }
           />
+
+          {/* Quotations - Both Admin and Shop */}
           <Route
             path="quotation"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["admin", "shop"]}>
                 <Quotation />
               </ProtectedRoute>
             }
           />
+
+          {/* Projects - Both Admin and Shop */}
           <Route
             path="projects"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["admin", "shop"]}>
                 <Projects />
               </ProtectedRoute>
             }
           />
+
+          {/* Dropshipping - Admin only */}
           <Route
             path="dropshipping"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["admin"]}>
                 <Dropshipping />
               </ProtectedRoute>
             }
           />
+
+          {/* Investment - Admin only */}
           <Route
             path="investment"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["admin"]}>
                 <Investment />
               </ProtectedRoute>
             }
           />
+
+          {/* Expenses - Both Admin and Shop */}
           <Route
             path="expenses"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["admin", "shop"]}>
                 <Expenses />
               </ProtectedRoute>
             }
           />
+
+          {/* Shop Management - Admin only */}
           <Route
             path="shopManagement"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["admin"]}>
                 <ShopManagement />
               </ProtectedRoute>
             }
           />
         </Route>
+
         <Route path="*" element={<Navigate to="/" replace />} />
         <Route path="/login" element={<Login />} />
       </Routes>

@@ -1,30 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-// import { authAPI } from "../services/api";
-
-// TEMPORARY: Use mock data until backend is ready
-import mockApi from '../services/mockApi';
-import { delay } from "framer-motion";
-
-// export const login = createAsyncThunk(
-//   "auth/login",
-//   async (credentials, { rejectWithValue }) => {
-//     try {
-//       const response = await authAPI.login(credentials);
-//       localStorage.setItem("token", response.token);
-//       return response;
-//     } catch (error) {
-//       return rejectWithValue(error);
-//     }
-//   }
-// );
+import { authAPI } from "../services/api";
 
 export const login = createAsyncThunk(
   "auth/login",
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await mockApi.login(credentials);
-      console.log(response.data.token);
-      localStorage.setItem("token", response.data.token);
+      const response = await authAPI.login(credentials);
       return response;
     } catch (error) {
       return rejectWithValue(error);
@@ -32,30 +13,20 @@ export const login = createAsyncThunk(
   }
 );
 
-export const logout = createAsyncThunk("auth/logout", async () => {
+export const logout = createAsyncThunk("auth/logout", async (_, { rejectWithValue }) => {
   try {
-    // await authAPI.logout();
-  } finally {
+    await authAPI.logout();
     localStorage.removeItem("token");
+  } catch (error) {
+    return rejectWithValue(error);
   }
 });
-
-// export const getCurrentUser = createAsyncThunk(
-//   "auth/getCurrentUser",
-//   async (_, { rejectWithValue }) => {
-//     try {
-//       return await authAPI.getCurrentUser();
-//     } catch (error) {
-//       return rejectWithValue(error);
-//     }
-//   }
-// );
 
 export const getCurrentUser = createAsyncThunk(
   "auth/getCurrentUser",
   async (_, { rejectWithValue }) => {
     try {
-      return await mockApi.login();
+      return await authAPI.getCurrentUser();
     } catch (error) {
       return rejectWithValue(error);
     }
@@ -86,9 +57,9 @@ const authSlice = createSlice({
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
         state.isAuthenticated = true;
-        state.user = action.payload.data.user,
-        state.token = action.payload.data.token;
-        console.log(state.token);
+        // Store user info (type: admin/shop, name, permissions, id)
+        state.user = action.payload.user || action.payload.data?.user;
+        state.token = action.payload.token || action.payload.data?.token;
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
@@ -97,6 +68,7 @@ const authSlice = createSlice({
       // Logout
       .addCase(logout.fulfilled, (state) => {
         state.user = null;
+        state.loading = false;
         state.token = null;
         state.isAuthenticated = false;
       })
@@ -107,8 +79,8 @@ const authSlice = createSlice({
       .addCase(getCurrentUser.fulfilled, (state, action) => {
         state.loading = false;
         state.isAuthenticated = true;
-        (state.token = action.payload.data.token),
-        (state.user = action.payload.data.user);
+        (state.token = action.payload.token),
+        (state.user = action.payload.user);
       })
       .addCase(getCurrentUser.rejected, (state) => {
         state.loading = false;
