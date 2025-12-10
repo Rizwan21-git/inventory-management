@@ -21,6 +21,7 @@ const ShopManagement = lazy(() =>
   import("./pages/shopManagement/shopmanagement")
 );
 const Login = lazy(() => import("./pages/Auth/Login"));
+const NotFound = lazy(() => import("./pages/NotFound/NotFound"));
 
 function App() {
   const dispatch = useDispatch();
@@ -162,8 +163,8 @@ function App() {
           />
         </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
         <Route path="/login" element={<Login />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
   );

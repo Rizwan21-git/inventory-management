@@ -2,12 +2,6 @@ import { Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import LoadingSpinner from "./LoadingSpinner";
 
-/**
- * ProtectedRoute component to enforce authentication and role-based access control
- * @param {React.ReactNode} children - Component to render if access is granted
- * @param {string[]} allowedRoles - Array of roles allowed to access (e.g., ['admin', 'shop'])
- * @param {string} requiredPage - Optional: specific page/permission required
- */
 const ProtectedRoute = ({ children, allowedRoles = null, requiredPage = null }) => {
   const { isAuthenticated, loading, user } = useSelector((state) => state.auth);
 
