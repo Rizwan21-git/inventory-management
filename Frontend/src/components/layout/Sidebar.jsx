@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import {
@@ -15,6 +15,7 @@ import {
 
 const Sidebar = ({ isOpen }) => {
   const { user } = useSelector((state) => state.auth);
+  const location = useLocation();
 
   // All menu items with role-based visibility
   const allMenuItems = [
@@ -75,40 +76,35 @@ const Sidebar = ({ isOpen }) => {
       </div>
 
       <nav className="p-1">
-        {menuItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 border-b border-gray-150 transition-all  duration-200 group ${
-                isActive
-                  ? "bg-primary-50 text-primary-700 font-medium"
-                  : "text-gray-600 hover:bg-gray-50"
+        {menuItems.map((item) => {
+          // Determine active state. For shop users the app shows inventory at '/',
+          // so treat '/' as active for the '/inventory' link when user is shop.
+          const userRole = user?.userType || user?.type || "shop";
+          const isActive =
+            location.pathname === item.path ||
+            (userRole === "shop" && location.pathname === "/" && item.path === "/inventory");
+
+          return (
+            <NavLink key={item.path} to={item.path} className={
+              `flex items-center gap-3 px-4 py-3 border-b border-gray-150 transition-all duration-200 group ${
+                isActive ? "bg-primary-50 text-primary-700 font-medium" : "text-gray-600 hover:bg-gray-50"
               }`
-            }
-          >
-            {({ isActive }) => (
+            }>
               <>
                 <item.icon
                   className={`w-5 h-5 ${
-                    isActive
-                      ? "text-primary-600"
-                      : "text-gray-400 group-hover:text-gray-600"
+                    isActive ? "text-primary-600" : "text-gray-400 group-hover:text-gray-600"
                   }`}
                 />
                 {isOpen && (
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                  >
+                  <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
                     {item.label}
                   </motion.span>
                 )}
               </>
-            )}
-          </NavLink>
-        ))}
+            </NavLink>
+          );
+        })}
       </nav>
     </motion.aside>
   );

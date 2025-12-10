@@ -126,18 +126,17 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
 
     // Recent pending payments (from invoices in period) - show a small list for dashboard
     const pendingPayments = invoices
-      .filter((inv) => inv.paymentStatus === "pending")
+      .filter((inv) => inv.paymentStatus === "pending" && inv.invoiceType !== "quotation")
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-      .slice(0, 10)
+      .slice(0, 3)
       .map((inv) => ({
         _id: inv._id,
         invoiceNumber: inv.invoiceNumber,
-        name: inv.name || inv.customerName || "",
+        name: inv.name ||"",
         total: inv.total || 0,
         paymentStatus: inv.paymentStatus,
         createdAt: inv.createdAt,
       }));
-
     res.json({
       kpis: {
         totals: {
@@ -187,16 +186,4 @@ export const getAvailableYears = asyncHandler(async (req, res) => {
   }
 });
 
-export const getRecentActivity = asyncHandler(async (req, res) => {
-  try {
-    // Get recent invoices
-    const recentInvoices = await Invoice.find({_id: 0, invoiceNumber : 1, name: 1, total: 1, paymentStatus: 1})
-      .sort({ createdAt: -1 })
-      .limit(10);
 
-    res.json(recentInvoices);
-  } catch (error) {
-    res.status(500);
-    throw new Error("Failed to fetch recent activity");
-  }
-});

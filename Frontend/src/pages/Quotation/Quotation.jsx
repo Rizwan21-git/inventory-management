@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import {
@@ -21,9 +21,14 @@ import {
 import Card from "../../components/common/Card";
 import Table from "../../components/common/Table";
 import Badge from "../../components/common/Badge";
+import Modal from "../../components/common/Modal";
+import Input from "../../components/common/Input";
+import Select from "../../components/common/Select";
+import Button from "../../components/common/Button";
+import FileUpload from "../../components/common/FileUpload";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import { toast } from "react-hot-toast";
-import { INVOICE_TYPES } from "../../utils/constants";
+import { INVOICE_TYPES, BANK_LIST } from "../../utils/constants";
 import { formatCurrency, formatDate } from "../../utils/helpers";
 import {
   downloadInvoicePDF,
@@ -35,6 +40,17 @@ const Quotation = () => {
   const dispatch = useDispatch();
   const { invoices, loading } = useSelector((state) => state.invoice);
   const { items: inventoryItems } = useSelector((state) => state.inventory);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedQuotation, setSelectedQuotation] = useState(null);
+  const [acceptFormData, setAcceptFormData] = useState({
+    paymentStatus: "pending",
+    bankUsed: "",
+    paymentProof: null,
+  });
+  const [isAccepting, setIsAccepting] = useState(false);
+
+  const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
 
   // Fetch invoices and inventory on component mount
   useEffect(() => {
@@ -63,6 +79,33 @@ const Quotation = () => {
     }
   };
 
+  const handlePaymentProofUpload = (files) => {
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error("File size exceeds 1 MB");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setAcceptFormData({ ...acceptFormData, paymentProof: e.target.result });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const openAcceptModal = (quotation) => {
+    setSelectedQuotation(quotation);
+    setAcceptFormData({
+      paymentStatus: "pending",
+      bankUsed: "",
+      paymentProof: null,
+    });
+    setIsModalOpen(true);
+  };
+
   const handlePreviewPDF = (quotation) => {
     try {
       previewInvoicePDF(quotation);
@@ -80,53 +123,90 @@ const Quotation = () => {
     }
   };
 
-  // Accept quotation - convert to selling invoice
-  const handleAcceptQuotation = async (quotationId) => {
-    const quotation = quotations.find((qt) => qt._id === quotationId);
-    if (!quotation) {
-      toast.error("Quotation not found");
+  // Accept quotation - convert to selling invoice with payment details
+  const handleAcceptQuotation = async () => {
+    if (!selectedQuotation) return;
+
+    // Validate: payment status is required
+    if (!acceptFormData.paymentStatus) {
+      toast.error("Payment status is required");
       return;
     }
 
+    // Validate: bank used is required
+    if (!acceptFormData.bankUsed) {
+      toast.error("Bank / Payment method is required");
+      return;
+    }
+
+    // Validate: payment proof required if paid and not cash
     if (
-      window.confirm(
-        "Accept this quotation? It will be converted to a selling invoice and inventory will be updated."
-      )
+      acceptFormData.paymentStatus === "paid" &&
+      acceptFormData.bankUsed !== "cash" &&
+      !acceptFormData.paymentProof
     ) {
-      try {
-        // Process each item: decrease inventory, record profit/revenue
-        await Promise.all(
-          quotation.items.map(async (item) => {
-            const product = getSelectedProduct(item.productId);
-            if (!product) return;
+      toast.error("Payment proof is required for paid non-cash payments");
+      return;
+    }
 
-            // Decrease inventory
-            const newQuantity = (product.quantity || 0) - item.quantity;
-            await dispatch(
-              updateInventoryItem({
-                id: product._id,
-                data: { quantity: newQuantity },
-              })
-            ).unwrap();
-          })
-        );
+    setIsAccepting(true);
+    try {
+      // Process each item: decrease inventory
+      // Convert quotation type to selling with payment details
+      const updateData = {
+        invoiceType: INVOICE_TYPES.SELLING,
+        paymentStatus: acceptFormData.paymentStatus,
+        bankUsed: acceptFormData.bankUsed,
+      };
 
-        // Convert quotation type to selling
-        await dispatch(
-          updateInvoice({
-            id: quotationId,
-            data: {
-              invoiceType: INVOICE_TYPES.SELLING,
-              paymentStatus: "pending",
-              bankUsed: "",
-            },
-          })
-        ).unwrap();
-
-        toast.success("Quotation accepted and converted to selling invoice!");
-      } catch (error) {
-        toast.error(error?.message || "Failed to accept quotation");
+      // Add payment proof if provided
+      if (acceptFormData.paymentProof) {
+        updateData.paymentProof = acceptFormData.paymentProof;
       }
+
+      // Step 1: Validate all items first
+      for (const item of selectedQuotation.items) {
+        const product = getSelectedProduct(item.productId);
+        if (!product) continue;
+
+        const newQuantity = (product.quantity || 0) - item.quantity;
+
+        if (newQuantity < 0) {
+          toast.error(`Insufficient stock for product: ${product.name}`);
+          throw new Error("Insufficient stock");
+        }
+      }
+
+      await Promise.all(
+        selectedQuotation.items.map(async (item) => {
+          const product = getSelectedProduct(item.productId);
+          if (!product) return;
+
+          // Decrease inventory
+          const newQuantity = (product.quantity || 0) - item.quantity;
+          await dispatch(
+            updateInventoryItem({
+              id: product._id,
+              data: { quantity: newQuantity },
+            })
+          ).unwrap();
+        })
+      );
+
+      await dispatch(
+        updateInvoice({
+          id: selectedQuotation._id,
+          data: updateData,
+        })
+      ).unwrap();
+
+      toast.success("Quotation accepted and converted to selling invoice!");
+      setIsModalOpen(false);
+      setSelectedQuotation(null);
+    } catch (error) {
+      toast.error(error?.message || "Failed to accept quotation");
+    } finally {
+      setIsAccepting(false);
     }
   };
 
@@ -144,10 +224,6 @@ const Quotation = () => {
     }
   };
 
-  // const getStatusBadge = (status) => {
-  //   return <Badge variant="warning">PENDING</Badge>;
-  // };
-
   const columns = [
     { header: "Quotation #", accessor: "invoiceNumber" },
     {
@@ -160,13 +236,13 @@ const Quotation = () => {
         <span className="font-semibold">{formatCurrency(row.total)}</span>
       ),
     },
-    // {
-    //   header: "Status",
-    //   render: (row) => getStatusBadge(row.invoiceType),
-    // },
     {
       header: "Date",
       render: (row) => formatDate(row.createdAt),
+    },
+    {
+      header: "Created By",
+      accessor: "createdBy",
     },
     {
       header: "Actions",
@@ -204,7 +280,7 @@ const Quotation = () => {
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            onClick={() => handleAcceptQuotation(row._id)}
+            onClick={() => openAcceptModal(row)}
             className="p-2 text-success-600 hover:bg-success-50 rounded-lg transition-colors"
             title="Accept Quotation"
           >
@@ -232,6 +308,104 @@ const Quotation = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
+      {/* Accept Quotation Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedQuotation(null);
+        }}
+        title="Accept Quotation"
+      >
+        {selectedQuotation && (
+          <div className="space-y-4">
+            {/* Quotation Info */}
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-600">
+                Quotation #{selectedQuotation.invoiceNumber}
+              </p>
+              <p className="font-semibold text-gray-900">
+                {selectedQuotation.name}
+              </p>
+              <p className="text-lg font-bold text-primary-600 mt-1">
+                {formatCurrency(selectedQuotation.total)}
+              </p>
+            </div>
+
+            {/* Payment Status */}
+            <Select
+              required
+              label="Payment Status"
+              value={acceptFormData.paymentStatus}
+              onChange={(e) =>
+                setAcceptFormData({
+                  ...acceptFormData,
+                  paymentStatus: e.target.value,
+                })
+              }
+              options={[
+                { value: "pending", label: "Pending" },
+                { value: "paid", label: "Paid" },
+              ]}
+            />
+
+            {/* Bank Selection */}
+            <Select
+              required
+              label="Bank / Payment Method"
+              value={acceptFormData.bankUsed}
+              onChange={(e) =>
+                setAcceptFormData({
+                  ...acceptFormData,
+                  bankUsed: e.target.value,
+                })
+              }
+              options={[
+                { value: "", label: "Select a bank..." },
+                ...BANK_LIST.map((bank) => ({
+                  value: bank.code.toLowerCase(),
+                  label: bank.name,
+                })),
+              ]}
+            />
+
+            {/* Payment Proof Upload - Show only if paid and not cash */}
+            {acceptFormData.paymentStatus === "paid" &&
+              acceptFormData.bankUsed !== "cash" && (
+                <div>
+                  <FileUpload
+                    required
+                    label="Payment Proof (Required - Max 1 MB)"
+                    accept="image/*,.pdf"
+                    onChange={(files) => handlePaymentProofUpload(files)}
+                  />
+                  {acceptFormData.paymentProof && (
+                    <p className="text-sm text-success-600 mt-2">
+                      ✓ Payment proof uploaded
+                    </p>
+                  )}
+                </div>
+              )}
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 pt-4">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setSelectedQuotation(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button isLoading={isAccepting} onClick={handleAcceptQuotation}>
+                Accept & Convert
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}

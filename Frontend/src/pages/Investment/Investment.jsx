@@ -56,6 +56,10 @@ const Investment = () => {
       header: "Date",
       render: (row) => formatDate(row.createdAt),
     },
+    {
+      header: "Added By",
+      accessor: "createdBy",
+    },
   ];
 
   return (

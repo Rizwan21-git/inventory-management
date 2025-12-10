@@ -32,6 +32,7 @@ const Expenses = () => {
   const { expenses, loading, totalItems } = useSelector(
     (state) => state.expense
   );
+  const { user } = useSelector((state) => state.auth);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filterCategory, setFilterCategory] = useState("");
@@ -74,7 +75,23 @@ const Expenses = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await dispatch(createExpense(formData)).unwrap();
+      const expenseData = {
+        ...formData,
+        createdBy: user?.name || user?.username || "",
+      };
+      if (!formData.expenseName) {
+        toast.error("Expense name is required");
+        return;
+      }
+      if (!formData.amount) {
+        toast.error("Amount is required");
+        return;
+      }
+      if(!formData.category) {
+        toast.error("Category is required");
+        return;
+      }
+      await dispatch(createExpense(expenseData)).unwrap();
       toast.success("Expense added successfully!");
       setIsModalOpen(false);
       resetForm();
@@ -142,6 +159,7 @@ const Expenses = () => {
       header: "Date",
       render: (row) => formatDate(row.createdAt),
     },
+    { header: "Created By", accessor: "createdBy" },
     {
       header: "Proof",
       render: (row) => (

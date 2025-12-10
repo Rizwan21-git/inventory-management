@@ -17,9 +17,7 @@ const Projects = lazy(() => import("./pages/Projects/Projects"));
 const Dropshipping = lazy(() => import("./pages/Dropshipping/Dropshipping"));
 const Investment = lazy(() => import("./pages/Investment/Investment"));
 const Expenses = lazy(() => import("./pages/Expenses/Expenses"));
-const ShopManagement = lazy(() =>
-  import("./pages/shopManagement/shopmanagement")
-);
+const ShopManagement = lazy(() => import("./pages/shopManagement/shopmanagement"));
 const Login = lazy(() => import("./pages/Auth/Login"));
 const NotFound = lazy(() => import("./pages/NotFound/NotFound"));
 

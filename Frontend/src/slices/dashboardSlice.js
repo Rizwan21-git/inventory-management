@@ -4,7 +4,6 @@ import { dashboardAPI } from '../services/api';
 export const fetchDashboardStats = createAsyncThunk(
   "dashboard/fetchStats",
   async (params = {}) => {
-    // Request KPI stats from backend (dashboardAPI). The api layer returns response.data.
     return await dashboardAPI.getStats(params);
   }
 );
@@ -44,7 +43,6 @@ const dashboardSlice = createSlice({
       })
       .addCase(fetchDashboardStats.fulfilled, (state, action) => {
         state.loading = false;
-        // dashboardAPI returns response.data (the stats object)
         state.stats = action.payload;
       })
       .addCase(fetchDashboardStats.rejected, (state, action) => {

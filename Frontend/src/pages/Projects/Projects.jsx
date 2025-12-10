@@ -34,6 +34,7 @@ const Projects = () => {
   const dispatch = useDispatch();
   const { projects, loading, currentPage, totalPages, totalItems } =
     useSelector((state) => state.project);
+  const { user } = useSelector((state) => state.auth);
 
   // Local UI state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -88,6 +89,10 @@ const Projects = () => {
       toast.error("Project name is required");
       return;
     }
+    if (!formData.siteLocation.trim()) {
+      toast.error("Site location is required");
+      return;
+    }
     if (!formData.customerName.trim()) {
       toast.error("Customer name is required");
       return;
@@ -96,6 +101,7 @@ const Projects = () => {
     try {
       const projectData = {
         ...formData,
+        createdBy: user?.name || user?.username || "",
         profit: parseFloat(formData.customerLabourCost || 0) - parseFloat(formData.workerPayment || 0),
       };
       await dispatch(createProject(projectData)).unwrap();
@@ -195,6 +201,7 @@ const Projects = () => {
         );
       },
     },
+    { header: "Created By", accessor: "createdBy" },
     {
       header: "Status",
       render: (row) => (
@@ -280,7 +287,6 @@ const Projects = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="space-y-6"
       >
         {/* Header */}
         <motion.div
@@ -476,6 +482,7 @@ const Projects = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-3">
                 <Input
                   label="Worker Assigned"
+                  required
                   value={formData.workerAssigned}
                   onChange={(e) =>
                     setFormData({ ...formData, workerAssigned: e.target.value })

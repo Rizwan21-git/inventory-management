@@ -30,6 +30,7 @@ const invoiceSchema = new mongoose.Schema(
     supplierName: { type: String, default: "" },
     shippingCost: { type: Number, default: 0 },
     notes: { type: String, default: "" },
+    createdBy: { type: String, required: true },
   },
   { timestamps: true }
 );

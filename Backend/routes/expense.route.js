@@ -1,4 +1,5 @@
 import express from "express";
+import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const expenseRoutes = express.Router();
 
@@ -8,9 +9,9 @@ import {
   addExpense,
 } from "../controllers/expense.controller.js";
 
-// Route to get all products
-expenseRoutes.post("/", addExpense);
+// Routes
+expenseRoutes.post("/", authMiddleware, addExpense);
 expenseRoutes.get("/", getAllExpense);
-expenseRoutes.delete("/:id", deleteExpense);
+expenseRoutes.delete("/:id", authMiddleware, deleteExpense);
 
 export default expenseRoutes;

@@ -14,7 +14,6 @@ import {
 } from "react-icons/fi";
 import { fetchDashboardStats, fetchAvailableYears } from "../../slices/dashboardSlice";
 import { fetchLowStock } from "../../slices/inventorySlice";
-import { fetchDashInvoices } from "../../slices/invoiceSlice";
 import Card from "../../components/common/Card";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import { formatCurrency, formatCompactCurrency } from "../../utils/helpers";
@@ -24,14 +23,13 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { stats, loading } = useSelector((state) => state.dashboard);
   const { lowStockItems } = useSelector((state) => state.inventory);
-  // const { pendingPayments } = useSelector((state) => state.finance);
 
   // available years come directly from API (only show years available in DB)
   const availableYears = useSelector((state) => state.dashboard.availableYears) || [];
 
   // UI state for KPI time selection
   const [timeRange, setTimeRange] = useState({
-    period: "this_year", // 'this_year' or 'year'
+    period: "this_year", 
     year: new Date().getFullYear(),
     month: "all",
   });
@@ -42,14 +40,11 @@ const Dashboard = () => {
     dispatch(fetchDashboardStats({ period: "this_year", year }));
     dispatch(fetchAvailableYears());
     dispatch(fetchLowStock({}));
-    // fetch dashboard invoices (recent) used by dashboard widgets
-    dispatch(fetchDashInvoices());
   }, [dispatch]);
 
   // When the available years list is loaded, ensure year selection is valid
   useEffect(() => {
     if (timeRange.period === "year" && availableYears.length > 0) {
-      // if the currently selected year is not in the available list, set to the first available year
       if (!availableYears.includes(timeRange.year)) {
         const targetYear = availableYears[0];
         setTimeRange((prev) => ({ ...prev, year: targetYear }));
@@ -72,28 +67,7 @@ const Dashboard = () => {
     );
   };
   
-  // derive pending payments: prefer server-provided dashboard pendingPayments, otherwise fallback to invoices
-  const invoices = useSelector((state) => state.invoice.invoices) || [];
-  const dashInvoices = useSelector((state) => state.invoice.dashInvoices) || [];
-  const sourceInvoices = dashInvoices.length > 0 ? dashInvoices : invoices;
-  const serverPending = stats?.pendingPayments || null;
-  const pendingPayments = serverPending
-    ? serverPending.map((p) => ({
-        id: p._id,
-        customerName: p.name || p.customerName || "",
-        invoiceNumber: p.invoiceNumber,
-        amount: p.total || 0,
-        createdAt: p.createdAt,
-      }))
-    : sourceInvoices
-        .filter((i) => i.paymentStatus === "pending")
-        .map((payment) => ({
-          id: payment._id,
-          customerName: payment.name || payment.customerName || "",
-          invoiceNumber: payment.invoiceNumber,
-          amount: payment.total,
-          createdAt: payment.createdAt,
-        }));
+  const pendingPayments = stats?.pendingPayments || [];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -172,7 +146,7 @@ const Dashboard = () => {
                     "Nov",
                     "Dec",
                   ].map((m, i) => (
-                    <option key={m} value={i + 1}>
+                    <option key={i} value={i + 1}>
                       {m}
                     </option>
                   ))}
@@ -257,9 +231,7 @@ const Dashboard = () => {
                 {formatCurrency(stats?.kpis?.totals?.netProfit || 0)}
               </div>
             </div>
-            <div className="text-sm text-gray-500">Updated: -</div>
           </div>
-
         </Card>
       </div>
 
@@ -277,14 +249,13 @@ const Dashboard = () => {
           >
             <Card
               title="Low Stock Alert"
-              subtitle={`${lowStockItems.length} items need attention`}
               className="border-l-4 border-danger-500"
             >
               {loading ? (
                 <LoadingSpinner size="sm" />
               ) : (
                 <div className="space-y-3 max-h-64 overflow-y-auto custom-scrollbar">
-                  {lowStockItems?.map((item) => (
+                  {lowStockItems?.slice(0, lowStockItems.length > 3 ? 3 : lowStockItems.length).map((item) => (
                     <motion.div
                       key={item._id}
                       initial={{ opacity: 0 }}
@@ -298,9 +269,6 @@ const Dashboard = () => {
                           <p className="font-medium text-gray-900">
                             {item.name}
                           </p>
-                          <p className="text-sm text-gray-500">
-                            {item.category}
-                          </p>
                         </div>
                       </div>
                       <span className="text-danger-700 font-semibold">
@@ -308,6 +276,15 @@ const Dashboard = () => {
                       </span>
                     </motion.div>
                   ))}
+                 
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-center py-3 bg-danger-50 rounded-lg text-sm text-danger-700 font-semibold hover:bg-danger-100 transition-colors"
+                    >
+                      Click to view more details 
+                    </motion.div>
+               
                 </div>
               )}
             </Card>
@@ -324,7 +301,6 @@ const Dashboard = () => {
           >
             <Card
               title="Pending Payments"
-              subtitle={`${pendingPayments.length} payments pending`}
               className="border-l-4 border-warning-500"
             >
               {loading ? (
@@ -341,17 +317,23 @@ const Dashboard = () => {
                     >
                       <div>
                         <p className="font-medium text-gray-900">
-                          {payment.customerName}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Invoice #{payment.invoiceNumber}
+                          {payment.name}
                         </p>
                       </div>
                       <span className="text-danger-700 font-semibold">
-                        {formatCurrency(payment.amount)}
+                        {formatCurrency(payment.total)}
                       </span>
                     </motion.div>
                   ))}
+                  
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-center py-3 bg-warning-50 rounded-lg text-sm text-warning-700 font-semibold hover:bg-warning-100 transition-colors"
+                    >
+                      Click to view more details
+                    </motion.div>
+                 
                 </div>
               )}
             </Card>

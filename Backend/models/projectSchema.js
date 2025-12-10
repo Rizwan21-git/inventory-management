@@ -15,6 +15,7 @@ const projectSchema = new mongoose.Schema(
       type: String,
       enum: ["completed", "in_progress"],
     },
+    createdBy: { type: String, required: true },
   },
   { timestamps: true }
 );

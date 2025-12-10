@@ -15,10 +15,7 @@ import adminRoutes from "./routes/admin.route.js";
 import dashboardRoutes from "./routes/dashboard.route.js";
 import authRoutes from "./routes/auth.route.js";
 
-
 const app = express();
-
-
 
 // CORS configuration
 const corsOptions = {
@@ -26,13 +23,12 @@ const corsOptions = {
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   credentials: true,
 };
-// Enable CORS with the specified options
 
 app.use(cors(corsOptions));
 
 // Parse JSON data
-app.use(express.json({ limit: "5mb" }));
-app.use(express.urlencoded({ limit: "5mb", extended: true }));
+app.use(express.json({ limit: "3mb" }));
+app.use(express.urlencoded({ limit: "3mb", extended: true }));
 
 // Use routes
 app.use("/api/auth", authRoutes);

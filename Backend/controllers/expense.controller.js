@@ -1,4 +1,27 @@
 import { Expense } from "../models/expenseSchema.js";
+import Admin from "../models/adminSchema.js";
+import Shop from "../models/shopSchema.js";
+
+const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
+
+const getCreatorName = async (req) => {
+  try {
+    const userId = req.user?.userId;
+    const userType = req.user?.userType;
+    if (!userId || !userType) return "";
+    if (userType === "admin") {
+      const admin = await Admin.findById(userId);
+      return admin ? admin.name : "";
+    }
+    if (userType === "shop") {
+      const shop = await Shop.findById(userId);
+      return shop ? shop.name : "";
+    }
+    return "";
+  } catch (error) {
+    return "";
+  }
+};
 
 // Get all expenses
 export const getAllExpense = async (req, res) => {
@@ -24,12 +47,29 @@ export const addExpense = async (req, res) => {
         });
     }
 
+    // Validate proof size when provided (base64)
+    if (proof) {
+      try {
+        const base64 = (String(proof).split(",")[1] || "");
+        const approxSize = Math.ceil((base64.length * 3) / 4);
+        if (approxSize > MAX_FILE_SIZE) {
+          return res.status(400).json({ success: false, message: "Proof file exceeds maximum size of 1 MB" });
+        }
+      } catch (err) {}
+    }
+
+    const creatorName = (await getCreatorName(req)) || req.body.createdBy || "";
+    if (!creatorName) {
+      return res.status(400).json({ success: false, message: "Unable to determine creator name" });
+    }
+
     const newExpense = new Expense({
       expenseName,
       category,
       amount,
       proof,
       notes,
+      createdBy: creatorName,
     });
     const savedExpense = await newExpense.save();
 

@@ -49,6 +49,7 @@ const Invoice = () => {
     (state) => state.invoice
   );
   const { items: inventoryItems } = useSelector((state) => state.inventory);
+  const { user } = useSelector((state) => state.auth);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [lossWarning, setLossWarning] = useState(false);
@@ -102,7 +103,7 @@ const Invoice = () => {
     if (product.sizes?.length > 0 && item.sizeIdx !== null) {
       const size = product.sizes[item.sizeIdx];
       const area = (size.width * size.length) / 144;
-      if (item.buyingPrice != "") {
+      if (item.buyingPrice) {
         sellPrice = area * product.sellingPrice * item.quantity;
         buyPrice = area * item.buyingPrice * item.quantity;
       }else{
@@ -110,7 +111,7 @@ const Invoice = () => {
         buyPrice = area * product.buyingPrice * item.quantity;
       }
     } else {
-      if (item.buyingPrice != "") {
+      if (item.buyingPrice) {
         sellPrice = product.sellingPrice * item.quantity;
         buyPrice = item.buyingPrice * item.quantity;
       } else {
@@ -192,6 +193,52 @@ const Invoice = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Basic required fields validation
+    if (!formData.invoiceNumber || String(formData.invoiceNumber).trim() === "") {
+      toast.error("Invoice number is required");
+      return;
+    }
+
+    if ( !formData.name || String(formData.name).trim() === "") {
+      toast.error("Customer/ Supplier name is required");
+      return;
+    }
+
+    if (formData.phoneNumber) {
+      const pattern = /^[0-9+\-() ]+$/;
+      console.log(formData.phoneNumber.length)
+      if (!(pattern.test(formData.phoneNumber)) || formData.phoneNumber.length < 11) {
+        toast.error("Invalid phone number format or lenght");
+        return;
+      }
+    }
+
+    if (!formData.items || formData.items.length === 0) {
+      toast.error("Add at least one invoice item");
+      return;
+    }
+
+    // Per-item validation (product selected, size if required, valid quantity)
+    for (let i = 0; i < formData.items.length; i++) {
+      const item = formData.items[i];
+      if (!item.productId) {
+        toast.error(`Item #${i + 1}: please select a product`);
+        return;
+      }
+      const prod = getSelectedProduct(item.productId);
+      if (!prod) {
+        toast.error(`Item #${i + 1}: selected product not found`);
+        return;
+      }
+      if (prod?.sizes?.length > 0 && (item.sizeIdx === null || item.sizeIdx === undefined || item.sizeIdx === "")) {
+        toast.error(`Item #${i + 1}: please select a size`);
+        return;
+      }
+      if (!item.quantity || Number(item.quantity) <= 0) {
+        toast.error(`Item #${i + 1}: quantity must be at least 1`);
+        return;
+      }
+    }
 
     // Validation: Check product selection and out-of-stock only matters for selling
     const hasOutOfStock = formData.items.some((item) => {
@@ -206,12 +253,10 @@ const Invoice = () => {
       return;
     }
 
-    // If buying invoice, supplier info must be provided
-    if (formData.invoiceType === INVOICE_TYPES.BUYING) {
-      if (!formData.name || !formData.phoneNumber) {
-        toast.error(
-          "Please provide supplier name and phone for buying invoices"
-        );
+    // If dropshipping invoice, supplier info must be provided
+    if (formData.invoiceType === INVOICE_TYPES.DROPSHIPPING) {
+      if (!formData.supplierName || String(formData.supplierName).trim() === "") {
+        toast.error("Supplier name is required for buying invoices");
         return;
       }
     }
@@ -225,20 +270,6 @@ const Invoice = () => {
 
     if (lessQuantity && formData.invoiceType === INVOICE_TYPES.SELLING) {
       toast.error("One or more selected products are low in stock!");
-      return;
-    }
-
-    // Validation: Check if all items have required fields
-    // In buying mode user must select existing products, provide size when needed
-    const hasIncompleteItems = formData.items.some((item) => {
-      const prod = getSelectedProduct(item.productId);
-      if (!prod) return true; // buying requires selecting existing products
-      if (prod?.sizes?.length > 0 && item.sizeIdx === null) return true;
-      return false;
-    });
-
-    if (hasIncompleteItems) {
-      toast.error("Please complete all item fields!");
       return;
     }
 
@@ -265,9 +296,20 @@ const Invoice = () => {
       return;
     }
 
+    // Ensure bankUsed is present when paymentStatus requires it
+    if (
+      formData.invoiceType !== INVOICE_TYPES.QUOTATION &&
+      formData.paymentStatus &&
+      (!formData.bankUsed || String(formData.bankUsed).trim() === "")
+    ) {
+      toast.error("Bank is required ");
+      return;
+    }
+
     try {
       const invoiceData = {
         ...formData,
+        createdBy: user?.name || user?.username || "",
         subtotal: totals.baseSubtotal ?? totals.subtotalSell,
         tax: totals.taxAmount,
         discount: totals.discountAmount,
@@ -286,14 +328,6 @@ const Invoice = () => {
 
             // For quotations, skip inventory and profit/revenue updates
             if (formData.invoiceType === INVOICE_TYPES.QUOTATION) {
-              const newQuantity =
-                (product.quantity || 0) - Number(item.quantity || 0);
-              await dispatch(
-                updateStock({
-                  id: product._id,
-                  data: { quantity: newQuantity },
-                })
-              ).unwrap();
               return {
                 ...item,
                 productName: product?.name,
@@ -337,11 +371,6 @@ const Invoice = () => {
 
             // DROPSHIPPING flow: decrease stock, record profit/revenue (similar to selling)
             if (formData.invoiceType === INVOICE_TYPES.DROPSHIPPING) {
-              // Calculate profit after deducting shipping cost
-              const itemProfit = Number(
-                linePrice.sell - linePrice.buy - (formData.shippingCost || 0) ||
-                  0
-              );
 
               return {
                 ...item,
@@ -356,7 +385,6 @@ const Invoice = () => {
               };
             }
 
-            // SELLING flow: decrease stock, record profit/revenue
             // compute new inventory quantity and persist it
             const newQuantity = (product.quantity || 0) - item.quantity;
             await dispatch(
@@ -382,6 +410,8 @@ const Invoice = () => {
           })
         ),
       };
+
+      console.log(invoiceData)
       await dispatch(createInvoice(invoiceData)).unwrap();
       toast.success("Invoice created successfully!");
       setIsModalOpen(false);
@@ -391,18 +421,7 @@ const Invoice = () => {
     }
   };
 
-  // Payment proof upload
-  // const handlePaymentProofUpload = (files) => {
-  //   if (!files || files.length === 0) return;
-  //   const file = files[0];
-  //   const reader = new FileReader();
-  //   reader.onload = (e) => {
-  //     setFormData({ ...formData, paymentProof: e.target.result });
-  //   };
-  //   reader.readAsDataURL(file);
-  // };
-
-  const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+  const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
 
   const handlePaymentProofUpload = (files) => {
     if (!files || files.length === 0) return;
@@ -410,7 +429,7 @@ const Invoice = () => {
     const file = files[0];
 
     if (file.size > MAX_FILE_SIZE) {
-      toast.error("File size exceeds 2 MB");
+      toast.error("File size exceeds 1 MB");
       return;
     }
 
@@ -516,6 +535,7 @@ const Invoice = () => {
       header: "Date",
       render: (row) => formatDate(row.createdAt),
     },
+    { header: "Created By", accessor: "createdBy" },
     {
       header: "Actions",
       render: (row) => (
@@ -562,6 +582,8 @@ const Invoice = () => {
   ];
 
   // Get product options from inventory (only in-stock or show out of stock)
+  // const { user } = useSelector((state) => state.auth);
+
   const productOptions = (inventoryItems || []).map((product) => ({
     value: product.id || product._id,
     label: product.name + (product.quantity === 0 ? " (Out of stock)" : ""),
@@ -1050,7 +1072,7 @@ const Invoice = () => {
                 <FileUpload
                   label="Payment Proof (required)"
                   accept={"image/*,application/pdf"}
-                  maxSize={5 * 1024 * 1024}
+                  maxSize={MAX_FILE_SIZE}
                   onChange={(files) => handlePaymentProofUpload(files)}
                 />
               </div>

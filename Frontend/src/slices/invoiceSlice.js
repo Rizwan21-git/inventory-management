@@ -1,22 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { invoiceAPI } from "../services/api";
 
-// TEMPORARY: Use mock data until backend is ready
-// import mockApi from '../services/mockApi';
-
 export const fetchInvoices = createAsyncThunk(
   "invoice/fetchAll",
   async (params = {}) => {
     return await invoiceAPI.getAll(params);
   }
 );
-
-// export const fetchInvoices = createAsyncThunk(
-//   'invoice/fetchAll',
-//   async () => {
-//     return await mockApi.getInvoices();
-//   }
-// );
 
 export const fetchInvoiceById = createAsyncThunk(
   "invoice/fetchById",
@@ -52,18 +42,6 @@ export const deleteInvoice = createAsyncThunk("invoice/delete", async (id) => {
   return id;
 });
 
-export const fetchDashInvoices = createAsyncThunk(
-  "invoices/dashboard",
-  async (/*{ rejectWithValue }*/) => {
-    try {
-      return await invoiceAPI.getDashInvoices();
-    } catch (error) {
-      // return rejectWithValue(error);
-      return error;
-    }
-  }
-);
-
 const invoiceSlice = createSlice({
   name: "invoice",
   initialState: {
@@ -72,7 +50,6 @@ const invoiceSlice = createSlice({
     trigger: false,
     loading: false,
     error: null,
-    // totalItems: 0,
   },
   reducers: {
     clearCurrentInvoice: (state) => {
@@ -111,15 +88,8 @@ const invoiceSlice = createSlice({
         }
       })
       .addCase(deleteInvoice.fulfilled, (state, action) => {
-        // state.trigger = !state.trigger;
         state.invoices = state.invoices.filter((i) => i._id !== action.payload);
       })
-      .addCase(fetchDashInvoices.fulfilled, (state, action) => {
-        // Keep dashboard-specific invoices separate so we don't overwrite the main invoices list
-        if (Array.isArray(action.payload)) {
-          state.dashInvoices = action.payload;
-        }
-      });
   },
 });
 

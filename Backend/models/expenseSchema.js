@@ -11,6 +11,7 @@ const expenseSchema = new mongoose.Schema(
     amount: { type: Number, required: true },
     proof: { type: String, default: null },
     notes: { type: String, default: "" },
+    createdBy: { type: String, required: true },
   },
   { timestamps: true }
 );

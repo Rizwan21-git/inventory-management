@@ -188,6 +188,10 @@ const Dropshipping = () => {
       render: (row) => formatDate(row.createdAt),
     },
     {
+      header: "Created By",
+      accessor: "createdBy",
+    },
+    {
       header: "Actions",
       render: (row) => (
         <div className="flex items-center gap-2">
