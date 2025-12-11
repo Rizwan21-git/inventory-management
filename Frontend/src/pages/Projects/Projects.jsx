@@ -223,6 +223,7 @@ const Projects = () => {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => handleDelete(row._id)}
+            loading={loading}
             className="p-2 text-danger-600 hover:bg-danger-50 rounded-lg transition-colors"
             title="Delete"
           >
@@ -281,7 +282,7 @@ const Projects = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-     {/* <AnimatePresence> */}
+      {/* <AnimatePresence> */}
       <motion.div
         key="projects-page"
         initial={{ opacity: 0 }}
@@ -427,7 +428,7 @@ const Projects = () => {
               >
                 Cancel
               </Button>
-              <Button onClick={handleSubmit}>
+              <Button onClick={handleSubmit} loading={loading}>
                 {editingProject ? "Update Project" : "Create Project"}
               </Button>
             </>
@@ -599,7 +600,7 @@ const Projects = () => {
           </form>
         </Modal>
       </motion.div>
-    {/* </AnimatePresence> */}
+      {/* </AnimatePresence> */}
     </motion.div>
   );
 };

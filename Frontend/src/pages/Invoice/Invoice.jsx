@@ -683,7 +683,9 @@ const Invoice = () => {
             >
               Cancel
             </Button>
-            <Button onClick={handleSubmit}>Create Invoice</Button>
+            <Button loading={loading} onClick={handleSubmit}>
+              Create Invoice
+            </Button>
           </>
         }
       >
@@ -833,10 +835,11 @@ const Invoice = () => {
                       </div>
 
                       {/* Size Select (conditional) */}
-                      {hasSizes &&
-                        // (formData?.invoiceType === "selling" ||
-                        //   formData?.invoiceType ===
-                        //     INVOICE_TYPES.DROPSHIPPING) && (
+                      {
+                        hasSizes && (
+                          // (formData?.invoiceType === "selling" ||
+                          //   formData?.invoiceType ===
+                          //     INVOICE_TYPES.DROPSHIPPING) && (
                           <div>
                             <Select
                               label="Size (W x L)"
@@ -857,8 +860,9 @@ const Invoice = () => {
                               }))}
                             />
                           </div>
+                        )
                         // )
-                        }
+                      }
 
                       <div>
                         <Input

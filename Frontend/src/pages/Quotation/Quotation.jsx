@@ -251,6 +251,7 @@ const Quotation = () => {
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
+            loading={loading}
             onClick={() => handlePreviewPDF(row)}
             className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
             title="Preview"
@@ -260,6 +261,7 @@ const Quotation = () => {
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
+            loading={loading}
             onClick={() => handleDownloadPDF(row)}
             className="p-2 text-success-600 hover:bg-success-50 rounded-lg transition-colors"
             title="Download PDF"
@@ -269,6 +271,7 @@ const Quotation = () => {
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
+            loading={loading}
             onClick={() => handlePrintPDF(row)}
             className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
             title="Print"
@@ -398,7 +401,11 @@ const Quotation = () => {
               >
                 Cancel
               </Button>
-              <Button isLoading={isAccepting} onClick={handleAcceptQuotation}>
+              <Button
+                isLoading={isAccepting}
+                loading={loading}
+                onClick={handleAcceptQuotation}
+              >
                 Accept & Convert
               </Button>
             </div>

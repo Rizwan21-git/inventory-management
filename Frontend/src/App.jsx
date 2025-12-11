@@ -1,5 +1,5 @@
-import { useEffect, Suspense, lazy } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { useEffect, Suspense, lazy, useState } from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { getCurrentUser } from "./slices/authSlice";
@@ -17,15 +17,19 @@ const Projects = lazy(() => import("./pages/Projects/Projects"));
 const Dropshipping = lazy(() => import("./pages/Dropshipping/Dropshipping"));
 const Investment = lazy(() => import("./pages/Investment/Investment"));
 const Expenses = lazy(() => import("./pages/Expenses/Expenses"));
-const ShopManagement = lazy(() => import("./pages/shopManagement/shopmanagement"));
+const ShopManagement = lazy(() =>
+  import("./pages/shopManagement/shopmanagement")
+);
 const Login = lazy(() => import("./pages/Auth/Login"));
 const NotFound = lazy(() => import("./pages/NotFound/NotFound"));
 
 function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const token = localStorage.getItem("token");
   const { user } = useSelector((state) => state.auth);
+  const [isRouteLoading, setIsRouteLoading] = useState(false);
 
   useEffect(() => {
     if (token) {
@@ -34,6 +38,13 @@ function App() {
       navigate("/login");
     }
   }, [dispatch, token]);
+
+  // Detect route changes and show loading indicator
+  useEffect(() => {
+    setIsRouteLoading(true);
+    const timer = setTimeout(() => setIsRouteLoading(false), 300);
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
 
   // Determine home page based on user role
   const getHomePage = () => {
@@ -46,125 +57,132 @@ function App() {
     return <Dashboard />; // fallback
   };
 
+  // Global route loading overlay
+  const RouteLoadingOverlay = () =>
+    isRouteLoading && (
+      <div className="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50 pointer-events-none">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+
   return (
-    <Suspense fallback={<LoadingSpinner fullScreen />}>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          {/* Home route - role-based redirect */}
-          <Route
-            index
-            element={
-              <ProtectedRoute>
-                {getHomePage()}
-              </ProtectedRoute>
-            }
-          />
+    <>
+      <RouteLoadingOverlay />
+      <Suspense fallback={<LoadingSpinner fullScreen />}>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            {/* Home route - role-based redirect */}
+            <Route
+              index
+              element={<ProtectedRoute>{getHomePage()}</ProtectedRoute>}
+            />
 
-          {/* Dashboard - Admin only */}
-          <Route
-            path="dashboard"
-            element={
-              <ProtectedRoute allowedRoles={["admin"]}>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
+            {/* Dashboard - Admin only */}
+            <Route
+              path="dashboard"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Inventory - Both Admin and Shop */}
-          <Route
-            path="inventory"
-            element={
-              <ProtectedRoute allowedRoles={["admin", "shop"]}>
-                <Inventory />
-              </ProtectedRoute>
-            }
-          />
+            {/* Inventory - Both Admin and Shop */}
+            <Route
+              path="inventory"
+              element={
+                <ProtectedRoute allowedRoles={["admin", "shop"]}>
+                  <Inventory />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Finance - Admin only */}
-          <Route
-            path="finance"
-            element={
-              <ProtectedRoute allowedRoles={["admin"]}>
-                <Finance />
-              </ProtectedRoute>
-            }
-          />
+            {/* Finance - Admin only */}
+            <Route
+              path="finance"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <Finance />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Invoices - Both Admin and Shop */}
-          <Route
-            path="invoices"
-            element={
-              <ProtectedRoute allowedRoles={["admin", "shop"]}>
-                <Invoice />
-              </ProtectedRoute>
-            }
-          />
+            {/* Invoices - Both Admin and Shop */}
+            <Route
+              path="invoices"
+              element={
+                <ProtectedRoute allowedRoles={["admin", "shop"]}>
+                  <Invoice />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Quotations - Both Admin and Shop */}
-          <Route
-            path="quotation"
-            element={
-              <ProtectedRoute allowedRoles={["admin", "shop"]}>
-                <Quotation />
-              </ProtectedRoute>
-            }
-          />
+            {/* Quotations - Both Admin and Shop */}
+            <Route
+              path="quotation"
+              element={
+                <ProtectedRoute allowedRoles={["admin", "shop"]}>
+                  <Quotation />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Projects - Both Admin and Shop */}
-          <Route
-            path="projects"
-            element={
-              <ProtectedRoute allowedRoles={["admin", "shop"]}>
-                <Projects />
-              </ProtectedRoute>
-            }
-          />
+            {/* Projects - Both Admin and Shop */}
+            <Route
+              path="projects"
+              element={
+                <ProtectedRoute allowedRoles={["admin", "shop"]}>
+                  <Projects />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Dropshipping - Admin only */}
-          <Route
-            path="dropshipping"
-            element={
-              <ProtectedRoute allowedRoles={["admin"]}>
-                <Dropshipping />
-              </ProtectedRoute>
-            }
-          />
+            {/* Dropshipping - Admin only */}
+            <Route
+              path="dropshipping"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <Dropshipping />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Investment - Admin only */}
-          <Route
-            path="investment"
-            element={
-              <ProtectedRoute allowedRoles={["admin"]}>
-                <Investment />
-              </ProtectedRoute>
-            }
-          />
+            {/* Investment - Admin only */}
+            <Route
+              path="investment"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <Investment />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Expenses - Both Admin and Shop */}
-          <Route
-            path="expenses"
-            element={
-              <ProtectedRoute allowedRoles={["admin", "shop"]}>
-                <Expenses />
-              </ProtectedRoute>
-            }
-          />
+            {/* Expenses - Both Admin and Shop */}
+            <Route
+              path="expenses"
+              element={
+                <ProtectedRoute allowedRoles={["admin", "shop"]}>
+                  <Expenses />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Shop Management - Admin only */}
-          <Route
-            path="shopManagement"
-            element={
-              <ProtectedRoute allowedRoles={["admin"]}>
-                <ShopManagement />
-              </ProtectedRoute>
-            }
-          />
-        </Route>
+            {/* Shop Management - Admin only */}
+            <Route
+              path="shopManagement"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <ShopManagement />
+                </ProtectedRoute>
+              }
+            />
+          </Route>
 
-        <Route path="/login" element={<Login />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Suspense>
+          <Route path="/login" element={<Login />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
+    </>
   );
 }
 

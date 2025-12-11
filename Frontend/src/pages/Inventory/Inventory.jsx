@@ -769,6 +769,7 @@ const Inventory = () => {
               type="submit"
               variant="primary"
               className="w-full sm:flex-1"
+              loading={loading}
             >
               {editingItem ? "Update Product" : "Add Product"}
             </Button>

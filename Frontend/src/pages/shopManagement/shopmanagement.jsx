@@ -559,6 +559,7 @@ const ShopManagement = () => {
                       variant="primary"
                       className="flex-1"
                       size="sm"
+                      loading={loading}
                     >
                       View Workers
                     </Button>
@@ -602,9 +603,7 @@ const ShopManagement = () => {
                       <h3 className="text-lg font-semibold text-gray-900">
                         {admin.name}
                       </h3>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {admin.role}
-                      </p>
+                      <p className="text-sm text-gray-600 mt-1">{admin.role}</p>
                     </div>
                   </div>
 
@@ -782,7 +781,11 @@ const ShopManagement = () => {
             >
               Cancel
             </Button>
-            <Button onClick={handleShopSubmit} disabled={loading}>
+            <Button
+              onClick={handleShopSubmit}
+              loading={loading}
+              disabled={loading}
+            >
               {loading
                 ? "Processing..."
                 : editingShop
@@ -889,7 +892,11 @@ const ShopManagement = () => {
             >
               Cancel
             </Button>
-            <Button onClick={handleWorkerSubmit} disabled={workersLoading}>
+            <Button
+              onClick={handleWorkerSubmit}
+              loading={loading}
+              disabled={workersLoading}
+            >
               {workersLoading
                 ? "Processing..."
                 : editingWorker
@@ -984,7 +991,7 @@ const ShopManagement = () => {
             >
               Cancel
             </Button>
-            <Button onClick={handleAdminSubmit}>
+            <Button loading={loading} onClick={handleAdminSubmit}>
               {editingAdmin ? "Update Admin" : "Add Admin"}
             </Button>
           </>
@@ -1024,7 +1031,10 @@ const ShopManagement = () => {
                 required
                 value={adminFormData.username}
                 onChange={(e) =>
-                  setAdminFormData({ ...adminFormData, username: e.target.value })
+                  setAdminFormData({
+                    ...adminFormData,
+                    username: e.target.value,
+                  })
                 }
                 placeholder="Enter admin username"
                 icon={FiLock}

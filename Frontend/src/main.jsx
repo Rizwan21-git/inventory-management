@@ -8,7 +8,7 @@ import store from "./store";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
+
     <Provider store={store}>
       <BrowserRouter future={{ v7_startTransition: true }}>
         <App />
@@ -37,5 +37,5 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         />
       </BrowserRouter>
     </Provider>
-  </React.StrictMode>
+  
 );
