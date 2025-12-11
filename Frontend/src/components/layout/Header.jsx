@@ -79,21 +79,6 @@ const Header = ({ onMenuClick }) => {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
 
-  // const [isNotifOpen, setIsNotifOpen] = useState(false);
-  // const notifRef = useRef(null);
-
-  // close notification dropdown on outside click
-  // useEffect(() => {
-  //   // const handler = (e) => {
-  //   //   if (!notifRef.current) return;
-  //   //   if (!notifRef.current.contains(e.target)) {
-  //   //     setIsNotifOpen(false);
-  //   //   }
-  //   // };
-  //   // document.addEventListener('mousedown', handler);
-  //   // return () => document.removeEventListener('mousedown', handler);
-  // }, []);
-
   const handleLogout = async () => {
     try {
       await dispatch(logout()).unwrap();
@@ -105,7 +90,7 @@ const Header = ({ onMenuClick }) => {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-20">
+    <header className="bg-white border-b border-gray-200 sm:px-6 py-4 sticky top-0 z-20">
       <div className="flex items-center justify-between">
         {/* left: menu button */}
         <button
@@ -117,33 +102,6 @@ const Header = ({ onMenuClick }) => {
 
         {/* right: notifications + user */}
         <div className="relative flex items-center gap-4">
-          {/* <button
-            onClick={() => setIsNotifOpen((prev) => !prev)}
-            className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <FiBell className="w-6 h-6 text-gray-600" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-danger-500 rounded-full" />
-          </button> */}
-
-          {/* notification dropdown
-          {isNotifOpen && (
-            <div
-              ref={notifRef}
-              className="absolute right-0 mt-10 w-80 bg-white rounded-xl shadow-lg border border-gray-100 z-30"
-            >
-              <div className="px-4 py-3 border-b flex items-center justify-between">
-                <span className="text-sm font-semibold text-gray-900">
-                  Notifications
-                </span>
-                <span className="text-xs text-gray-500">No new alerts</span>
-              </div>
-              <div className="p-4 text-sm text-gray-500">
-                No notification rigth now.
-                Check back later.
-              </div>
-            </div>
-          )} */}
-
           {/* user info */}
           <div className="flex items-center gap-3">
             <div className="text-right">

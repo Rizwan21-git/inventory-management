@@ -97,7 +97,7 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
     // 'In stock' here means sufficiently stocked (quantity > low-stock threshold)
     const doorsInStock = doorProducts.filter((p) => p.quantity > 10).length;
     // Total items considered for the section: inStock + lowStock (exclude out-of-stock)
-    const doorsCount = doorsInStock + doorsLowStock;
+    const doorsCount = doorsInStock + doorsLowStock + doorsOutOfStock;
 
     const interiorOutOfStock = interiorProducts.filter((p) => p.quantity === 0).length;
     const interiorLowStock = interiorProducts.filter((p) => p.quantity > 0 && p.quantity <= 10).length;

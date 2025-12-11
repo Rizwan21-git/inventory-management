@@ -406,7 +406,7 @@ const Quotation = () => {
                 loading={loading}
                 onClick={handleAcceptQuotation}
               >
-                Accept & Convert
+                Accept
               </Button>
             </div>
           </div>
@@ -421,18 +421,20 @@ const Quotation = () => {
         className="flex items-center justify-between mb-6"
       >
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <FiFileText className="text-primary-600" />
-            Quotation Management
-          </h1>
-          <p className="text-gray-600 mt-1">
+          <div className="flex flex-row items-start gap-2 align-middle justify-center">
+            <FiFileText className="text-primary-600 text-xl my-auto" />
+            <h1 className="text-xl lg:text-3xl md:text-2xl font-bold text-gray-900 flex items-center gap-2">
+              Quotation Management
+            </h1>
+          </div>
+          <p className="text-gray-600 text-xs md:text-sm lg:text-xl mt-1">
             View, manage, and respond to quotations
           </p>
         </div>
       </motion.div>
 
       {/* Table Card */}
-      <Card>
+      <Card className={"mb-9"}>
         {loading && quotations.length === 0 ? (
           <LoadingSpinner size="md" />
         ) : (

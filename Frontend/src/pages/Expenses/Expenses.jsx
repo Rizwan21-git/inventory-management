@@ -24,7 +24,7 @@ import Badge from "../../components/common/Badge";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import { toast } from "react-hot-toast";
 import { EXPENSE_CATEGORIES } from "../../utils/constants";
-import { formatCurrency, formatDate } from "../../utils/helpers";
+import { formatCompactCurrency, formatCurrency, formatDate } from "../../utils/helpers";
 import FileUpload from "../../components/common/FileUpload";
 
 const Expenses = () => {
@@ -253,40 +253,51 @@ const Expenses = () => {
 
         {/* Category Summary */}
         {Object.keys(categoryTotals).length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {Object.entries(categoryTotals).map(([category, total]) => (
               <Card
+                key={category}
                 whileHover={{
-                  scale: 1.05,
-                  rotateY: 5,
-                  boxShadow: "0 10px 40px rgba(0,0,0,0.1)",
+                  scale: 1.04,
+                  y: -4,
+                  boxShadow: "0 15px 45px rgba(0,0,0,0.12)",
                 }}
                 whileTap={{ scale: 0.98 }}
-                transition={{ type: "spring", stiffness: 300 }}
-                key={category}
-                className="border-l-4 border-primary-500"
+                transition={{ type: "spring", stiffness: 260, damping: 18 }}
+                className="relative overflow-hidden rounded-xl bg-white border border-gray-200"
               >
-                <div className="flex items-center justify-between">
+                {/* subtle decorative gradient blur */}
+                <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-primary-500 opacity-15 blur-2xl pointer-events-none" />
+
+                {/* thin bottom border accent */}
+                <div className="absolute bottom-0 left-0 w-full h-[3px] bg-primary-500" />
+
+                <div className="flex items-center justify-between relative z-10 p-4">
                   <div>
                     <p className="text-sm font-medium text-gray-500 capitalize">
                       {category.replace("_", " ")}
                     </p>
+
                     {loading ? (
                       <LoadingSpinner size="sm" />
                     ) : (
                       <h3 className="text-xl font-bold text-gray-900 mt-1">
-                        {formatCurrency(total)}
+                        {formatCompactCurrency(total)}
                       </h3>
                     )}
                   </div>
-                  <FiPieChart className="w-8 h-8 text-primary-500" />
+
+                  <div className="p-3 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 shadow-md">
+                    <FiPieChart className="w-6 h-6 text-white" />
+                  </div>
                 </div>
               </Card>
             ))}
           </div>
         )}
-        <Card>
-          <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <Card className={"mb-12"}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <Select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}

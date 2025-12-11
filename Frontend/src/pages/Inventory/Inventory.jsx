@@ -8,9 +8,9 @@ import {
   FiTrash2,
   FiSearch,
   FiPackage,
-  FiAlertCircle,
-  FiImage,
-  FiX,
+  FiBox,
+  FiAlertTriangle,
+  FiXCircle,
 } from "react-icons/fi";
 import {
   fetchInventory,
@@ -82,21 +82,6 @@ const Inventory = () => {
   const handleSearch = debounce((value) => {
     setSearchTerm(value);
   }, 300);
-
-  // Handle image upload
-  // const handleImageUpload = (files) => {
-  //   if (files && files.length > 0) {
-  //     const file = files[0];
-  //     setImageFile(file);
-
-  //     const reader = new FileReader();
-  //     reader.onload = (e) => {
-  //       setPreviewImage(e.target.result);
-  //       setFormData({ ...formData, image: e.target.result });
-  //     };
-  //     reader.readAsDataURL(file);
-  //   }
-  // };
 
   // Calculate profit margin
   const calculateMargin = () => {
@@ -293,13 +278,6 @@ const Inventory = () => {
       accessor: "name",
       render: (row) => (
         <div className="flex flex-col items-center gap-1 min-w-[110px]">
-          {/* {row.image && (
-            <img
-              src={row.image}
-              alt={row.name}
-              className="w-24 h-24 rounded object-cover border border-gray-200 mb-1"
-            />
-          )} */}
           <span className="font-semibold text-gray-900 text-center">
             {row.name}
           </span>
@@ -414,11 +392,11 @@ const Inventory = () => {
         <div className="mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
+              <h1 className="text-xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
                 <FiPackage className="text-primary-600" />
                 Inventory Management
               </h1>
-              <p className="text-gray-600 mt-1">
+              <p className="text-gray-600 text-xs md:text-sm lg:text-xl mt-1">
                 Manage your product inventory with buying/selling prices and
                 images
               </p>
@@ -440,42 +418,75 @@ const Inventory = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          <Card className="bg-white">
-            <div className="text-center">
-              <p className="text-gray-600 text-sm md:text-base">Total Items</p>
+          {/* Total Items */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition relative">
+            <div className="absolute bottom-0 left-0 w-full h-[3px] bg-primary-500 rounded-b-2xl"></div>
+
+            <div className="flex flex-col items-center text-center">
+              {/* Icon */}
+              <div className="w-12 h-12 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center mb-3">
+                <FiBox className="w-6 h-6" />
+              </div>
+
+              <p className="text-gray-600 text-sm md:text-base font-medium">
+                Total Items
+              </p>
+
               {loading ? (
-                <p className="mt-3 font-bold">Updating...</p>
+                <p className="mt-3 font-semibold text-gray-700">Updating...</p>
               ) : (
-                <p className="text-2xl md:text-3xl font-bold text-primary-600">
+                <p className="text-3xl font-bold text-primary-600 mt-1">
                   {totalItems}
                 </p>
               )}
             </div>
-          </Card>
-          <Card className="bg-white">
-            <div className="text-center">
-              <p className="text-gray-600 text-sm md:text-base">Low Stock</p>
+          </div>
+
+          {/* Low Stock */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition relative">
+            <div className="absolute bottom-0 left-0 w-full h-[3px] bg-yellow-500 rounded-b-2xl"></div>
+
+            <div className="flex flex-col items-center text-center">
+              <div className="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mb-3">
+                <FiAlertTriangle className="w-6 h-6" />
+              </div>
+
+              <p className="text-gray-600 text-sm md:text-base font-medium">
+                Low Stock
+              </p>
+
               {loading ? (
-                <p className="mt-3 font-bold">Updating...</p>
+                <p className="mt-3 font-semibold text-gray-700">Updating...</p>
               ) : (
-                <p className="text-2xl md:text-3xl font-bold text-warning-600">
+                <p className="text-3xl font-bold text-warning-600 mt-1">
                   {lowStockCount}
                 </p>
               )}
             </div>
-          </Card>
-          <Card className="bg-white">
-            <div className="text-center">
-              <p className="text-gray-600 text-sm md:text-base">Out of Stock</p>
+          </div>
+
+          {/* Out of Stock */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition relative">
+            <div className="absolute bottom-0 left-0 w-full h-[3px] bg-red-500 rounded-b-2xl"></div>
+
+            <div className="flex flex-col items-center text-center">
+              <div className="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-3">
+                <FiXCircle className="w-6 h-6" />
+              </div>
+
+              <p className="text-gray-600 text-sm md:text-base font-medium">
+                Out of Stock
+              </p>
+
               {loading ? (
-                <p className="mt-3 font-bold">Updating...</p>
+                <p className="mt-3 font-semibold text-gray-700">Updating...</p>
               ) : (
-                <p className="text-2xl md:text-3xl font-bold text-danger-600">
+                <p className="text-3xl font-bold text-danger-600 mt-1">
                   {outOfStockCount}
                 </p>
               )}
             </div>
-          </Card>
+          </div>
         </div>
 
         {/* Search and Filters */}
@@ -509,9 +520,8 @@ const Inventory = () => {
             </div>
           </div>
         </Card>
-
         {/* Table */}
-        <Card className="overflow-x-auto">
+        <Card className="overflow-x-auto mb-12">
           <div className="overflow-x-auto">
             {loading ? (
               <LoadingSpinner size="md" />
@@ -720,37 +730,6 @@ const Inventory = () => {
                 })
               )}
             />
-
-            {/* <div className="min-w-8">
-              {!previewImage ? (
-                <FileUpload
-                  label="Upload Product Image"
-                  accept="image/*"
-                  maxSize={5 * 1024 * 1024}
-                  onChange={handleImageUpload}
-                  required
-                />
-              ) : (
-                <div className="relative inline-block">
-                  <img
-                    src={previewImage}
-                    alt="Preview"
-                    className="w-96 max-w-xs h-auto rounded-lg border-2 border-gray-200"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPreviewImage(null);
-                      setImageFile(null);
-                      setFormData({ ...formData, image: null });
-                    }}
-                    className="absolute -top-2 -right-2 bg-danger-600 text-white rounded-full p-1 hover:bg-danger-700"
-                  >
-                    <FiX size={16} />
-                  </button>
-                </div>
-              )}
-            </div> */}
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">

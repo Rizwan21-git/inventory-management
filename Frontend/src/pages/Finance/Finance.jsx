@@ -28,6 +28,7 @@ import {
   formatDate,
   debounce,
   getBankNameByCode,
+  formatCompactCurrency,
 } from "../../utils/helpers";
 
 const Finance = () => {
@@ -283,7 +284,7 @@ const Finance = () => {
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 10 },
     visible: {
       opacity: 1,
       y: 0,
@@ -305,11 +306,13 @@ const Finance = () => {
         className="flex items-center justify-between"
       >
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <FiPackage className="text-primary-600" />
-            Finance & Accounts
-          </h1>
-          <p className="text-gray-600 mt-1">
+          <div className="flex flex-row justify-center align-middle items-start gap-2">
+            <FiPackage className="text-primary-600 text-xl my-auto" />
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 flex items-center gap-2">
+              Finance & Accounts
+            </h1>
+          </div>
+          <p className="text-gray-600 mt-1 text-xs md:text-sm lg:text-lg">
             Track payments, revenue, and expenses
           </p>
         </div>
@@ -317,7 +320,7 @@ const Finance = () => {
 
       {/* Summary Cards */}
       <motion.div
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-9"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-2"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -326,7 +329,7 @@ const Finance = () => {
         <motion.div variants={itemVariants}>
           <motion.div
             whileHover={{
-              scale: 1.03,
+              scale: 1.01,
               boxShadow: "0 10px 30px rgba(34, 197, 94, 0.2)",
             }}
             transition={{ type: "spring", stiffness: 300 }}
@@ -337,8 +340,8 @@ const Finance = () => {
                   <p className="text-sm font-medium text-gray-500">
                     To Receive
                   </p>
-                  <h3 className="text-2xl font-bold text-success-600 mt-1">
-                    {formatCurrency(totalToReceive)}
+                  <h3 className="text-xl lg:text-2xl font-bold text-success-600 mt-1">
+                    {formatCompactCurrency(totalToReceive)}
                   </h3>
                   <p className="text-xs text-gray-500 mt-1">Pending incoming</p>
                 </div>
@@ -359,7 +362,7 @@ const Finance = () => {
         <motion.div variants={itemVariants}>
           <motion.div
             whileHover={{
-              scale: 1.03,
+              scale: 1.01,
               boxShadow: "0 10px 30px rgba(239, 68, 68, 0.2)",
             }}
             transition={{ type: "spring", stiffness: 300 }}
@@ -368,8 +371,8 @@ const Finance = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-500">To Give</p>
-                  <h3 className="text-2xl font-bold text-danger-600 mt-1">
-                    {formatCurrency(totalToGive)}
+                  <h3 className="text-xl lg:text-2xl font-bold text-danger-600 mt-1">
+                    {formatCompactCurrency(totalToGive)}
                   </h3>
                   <p className="text-xs text-gray-500 mt-1">Pending outgoing</p>
                 </div>
@@ -426,7 +429,7 @@ const Finance = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >
-        <Card>
+        <Card className={"mb-12"}>
           {/* Search & Filters */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="flex-1">
@@ -508,9 +511,7 @@ const Finance = () => {
               </p>
               <p>
                 <strong>Amount:</strong>{" "}
-                {formatCurrency(
-                  selectedRecord.total ?? 0
-                )}
+                {formatCompactCurrency(selectedRecord.total ?? 0)}
               </p>
               <p>
                 <strong>Date:</strong> {formatDate(selectedRecord.createdAt)}

@@ -2,18 +2,14 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   FiPlus,
-  FiEdit2,
   FiTrash2,
   FiUser,
   FiPackage,
-  FiX,
-  FiThumbsUp,
   FiBriefcase,
-  FiAlertCircle,
   FiSearch,
   FiDollarSign,
 } from "react-icons/fi";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   fetchProjects,
   createProject,
@@ -28,7 +24,11 @@ import Table from "../../components/common/Table";
 import Modal from "../../components/common/Modal";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import { toast } from "react-hot-toast";
-import { formatDate, formatCurrency } from "../../utils/helpers";
+import {
+  formatCurrency,
+  formatCompactCurrency,
+  debounce,
+} from "../../utils/helpers";
 
 const Projects = () => {
   const dispatch = useDispatch();
@@ -38,6 +38,7 @@ const Projects = () => {
 
   // Local UI state
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const [editingProject, setEditingProject] = useState(null);
   const [formData, setFormData] = useState({
     projectName: "",
@@ -80,6 +81,10 @@ const Projects = () => {
     totalProfit += p.profit;
   });
 
+  const handleSearch = debounce((value) => {
+    setSearchTerm(value);
+  }, 300);
+
   // Handlers
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -102,7 +107,9 @@ const Projects = () => {
       const projectData = {
         ...formData,
         createdBy: user?.name || user?.username || "",
-        profit: parseFloat(formData.customerLabourCost || 0) - parseFloat(formData.workerPayment || 0),
+        profit:
+          parseFloat(formData.customerLabourCost || 0) -
+          parseFloat(formData.workerPayment || 0),
       };
       await dispatch(createProject(projectData)).unwrap();
       toast.success("Project created successfully!");
@@ -241,9 +248,29 @@ const Projects = () => {
   ];
 
   // Client-side filter by status
-  const filteredProjects = statusFilter
-    ? (projects || []).filter((p) => p.status === statusFilter)
-    : projects;
+  const getFilteredProjects = 
+  (statusFilter, searchTerm) => {
+    let filtered = projects || [];
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (p) =>
+          p.projectName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          p.siteLocation?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          p.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          p.workerAssigned?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    if (statusFilter) {
+      filtered = filtered.filter((p) => p.status === statusFilter);
+    }
+    return filtered;
+  }
+
+
+
+  const filteredProjects = getFilteredProjects(statusFilter, searchTerm);
+    
+
 
   // Apply modal controls
   const onNewProject = () => {
@@ -258,19 +285,22 @@ const Projects = () => {
     {
       title: "Total Projects",
       value: totalCount,
-      color: "bg-gray-600",
+      color: "bg-gradient-to-br from-gray-700 to-gray-900",
       icon: FiPackage,
     },
     {
       title: "In Progress",
       value: totalInProgress,
-      color: "bg-blue-500",
+      color: "bg-gradient-to-br from-blue-500 to-blue-700",
       icon: FiBriefcase,
     },
     {
       title: "Total Profit",
-      value: formatCurrency(totalProfit),
-      color: totalProfit >= 0 ? "bg-emerald-600" : "bg-red-600",
+      value: formatCompactCurrency(totalProfit),
+      color:
+        totalProfit >= 0
+          ? "bg-gradient-to-br from-emerald-500 to-emerald-700"
+          : "bg-gradient-to-br from-red-500 to-red-700",
       icon: FiDollarSign,
       isValue: true,
     },
@@ -316,7 +346,6 @@ const Projects = () => {
           </motion.div>
         </motion.div>
 
-        {/* Summary Cards */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -331,16 +360,19 @@ const Projects = () => {
               transition={{ delay: idx * 0.05 }}
               whileHover={{
                 scale: 1.03,
-                boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+                boxShadow: "0 8px 28px rgba(0,0,0,0.08)",
               }}
               className="cursor-default"
             >
-              <Card className="relative overflow-hidden">
-                <div className="flex items-start justify-between">
+              <Card className="relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+                {/* Content */}
+                <div className="flex items-start justify-between p-4">
+                  {/* Text */}
                   <div>
                     <p className="text-sm font-medium text-gray-500">
                       {card.title}
                     </p>
+
                     <h3
                       className={`text-2xl font-bold mt-2 ${
                         card.isValue ? "text-primary-600" : "text-gray-900"
@@ -349,10 +381,23 @@ const Projects = () => {
                       {card.value ?? 0}
                     </h3>
                   </div>
-                  <div className={`${card.color} p-3 rounded-lg`}>
-                    <card.icon className="w-6 h-6 text-white" />
-                  </div>
+
+                  {/* Icon container - polished */}
+                  <motion.div
+                    initial={{ scale: 0.85, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                    className={`
+                              rounded-xl p-3 shadow-inner 
+                              flex items-center justify-center
+                              ${card.bgLight} ${card.iconRing}
+                            `}
+                  >
+                    <card.icon className={`w-6 h-6 ${card.iconColor}`} />
+                  </motion.div>
                 </div>
+
+                {/* Bottom accent line */}
                 <div
                   className={`absolute bottom-0 left-0 w-full h-1 ${card.color}`}
                 />
@@ -373,9 +418,7 @@ const Projects = () => {
                 <Input
                   placeholder="Search projects..."
                   icon={FiSearch}
-                  onChange={(e) => {
-                    /* wire search functionality if needed */
-                  }}
+                  onChange={(e) => handleSearch(e.target.value)}
                 />
               </div>
               <Select
@@ -394,7 +437,7 @@ const Projects = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <Card>
+          <Card className={"mb-12"}>
             {loading && projects?.length === 0 ? (
               <LoadingSpinner size="md" />
             ) : (

@@ -127,32 +127,9 @@ const Dropshipping = () => {
       header: "Supplier",
       render: (row) => row.supplierName || "N/A",
     },
-    // {
-    //   header: "Buy Price",
-    //   render: (row) => {
-    //     const prices = calculateInvoicePrices(row);
-    //     return (
-    //       <span className="font-medium text-gray-900">
-    //         {formatCurrency(prices.buyPrice)}
-    //       </span>
-    //     );
-    //   },
-    // },
-    // {
-    //   header: "Sell Price",
-    //   render: (row) => {
-    //     const prices = calculateInvoicePrices(row);
-    //     return (
-    //       <span className="font-semibold text-primary-600">
-    //         {formatCurrency(prices.sellPrice)}
-    //       </span>
-    //     );
-    //   },
-    // },
     {
       header: "Shipping",
       render: (row) => {
-        // const prices = calculateInvoicePrices(row);
         return (
           <span className="font-medium text-gray-900">
             {formatCurrency(row.shippingCost)}
@@ -163,7 +140,6 @@ const Dropshipping = () => {
     {
       header: "Profit",
       render: (row) => {
-        // const prices = calculateInvoicePrices(row);
         return (
           <span
             className={`font-bold ${
@@ -216,15 +192,6 @@ const Dropshipping = () => {
           >
             <FiPrinter className="w-4 h-4" />
           </button>
-
-          {/* Delete */}
-          {/* <button
-            onClick={() => handleDelete(row.id)}
-            className="p-2 text-danger-600 hover:bg-danger-50 rounded-lg transition-colors"
-            title="Delete"
-          >
-            <FiTrash2 className="w-4 h-4" />
-          </button> */}
         </div>
       ),
     },
@@ -261,54 +228,114 @@ const Dropshipping = () => {
           </div>
         </div>
 
-        {/* Summary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card>
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          {/* Total Orders */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition relative">
+            <div className="absolute bottom-0 left-0 w-full h-[3px] bg-blue-500 rounded-b-2xl"></div>
+
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">
+                <p className="text-sm text-gray-500 font-medium">
                   Total Orders
                 </p>
-                <h3 className="text-2xl font-bold text-gray-900 mt-1">
+                <h3 className="text-3xl font-semibold text-gray-900 mt-1">
                   {totalOrders}
                 </h3>
               </div>
-            </div>
-          </Card>
 
-          <Card>
+              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                <svg
+                  className="w-6 h-6 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M3 3h18l-1.5 14h-15L3 3z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Total Revenue */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition relative">
+            <div className="absolute bottom-0 left-0 w-full h-[3px] bg-purple-500 rounded-b-2xl"></div>
+
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">
+                <p className="text-sm text-gray-500 font-medium">
                   Total Revenue
                 </p>
-                <h3 className="text-2xl font-bold text-primary-600 mt-1">
+                <h3 className="text-3xl font-semibold text-primary-600 mt-1">
                   {formatCurrency(totalSellRevenue)}
                 </h3>
               </div>
-            </div>
-          </Card>
 
-          <Card>
+              <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
+                <svg
+                  className="w-6 h-6 text-purple-600"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 8c-4.5 0-8 1.79-8 4s3.5 4 4 4 8-1.79 8-4-3.5-4-8-4z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Total Profit */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition relative">
+            <div
+              className={`absolute bottom-0 left-0 w-full h-[3px] rounded-b-2xl ${
+                totalProfit >= 0 ? "bg-green-500" : "bg-red-500"
+              }`}
+            ></div>
+
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">
+                <p className="text-sm text-gray-500 font-medium">
                   Total Profit
                 </p>
                 <h3
-                  className={`text-2xl font-bold mt-1 ${
-                    totalProfit >= 0 ? "text-success-600" : "text-danger-600"
+                  className={`text-3xl font-semibold mt-1 ${
+                    totalProfit >= 0 ? "text-green-600" : "text-red-600"
                   }`}
                 >
                   {formatCurrency(totalProfit)}
                 </h3>
               </div>
+
+              <div
+                className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                  totalProfit >= 0 ? "bg-green-50" : "bg-red-50"
+                }`}
+              >
+                <svg
+                  className={`w-6 h-6 ${
+                    totalProfit >= 0 ? "text-green-600" : "text-red-600"
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d={
+                      totalProfit >= 0
+                        ? "M5 12l5 5L20 7"
+                        : "M6 18L18 6M6 6l12 12"
+                    }
+                  />
+                </svg>
+              </div>
             </div>
-          </Card>
-        </div>
+          </div>
+        </div> 
 
         {/* Table */}
-        <Card>
+        <Card className={"mb-12"}>
           <div className="mb-4">
             <Input
               placeholder="Search by invoice #, customer name, or supplier name..."

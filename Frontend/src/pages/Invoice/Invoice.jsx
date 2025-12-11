@@ -620,12 +620,14 @@ const Invoice = () => {
         className="grid grid-cols-1 md:grid-cols-2 gap-6"
       >
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <FiPackage className="text-primary-600" />
-            Invoice Management
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Create and manage invoices with PDF export
+          <div className="flex flex-row align-middle items-start gap-2">
+            <FiPackage className="text-primary-600 text-xl my-auto" />
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 gap-2">
+              Invoice Management
+            </h1>
+          </div>
+          <p className="text-gray-600 mt-1 text-xs md:text-sm lg:text-lg">
+            Create, view, and manage your invoices
           </p>
         </div>
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -643,10 +645,10 @@ const Invoice = () => {
       </motion.div>
 
       {/* Table Card */}
-      <Card>
+      <Card className={"mb-12"}>
         <div className="mb-4">
           <Input
-            placeholder="Search by invoice #, customer name, or type..."
+            placeholder="Search by customer name, or type..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />

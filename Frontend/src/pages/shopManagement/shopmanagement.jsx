@@ -354,8 +354,8 @@ const ShopManagement = () => {
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
             {selectedShop ? (
               <>
-                <FiUsers className="text-primary-600" />
-                {selectedShop.name} - Workers
+                <FiUsers className="text-primary-600 text-4xl " />
+                <h4 className="text-xl md:text-2xl lg:text-3xl">{selectedShop.name} - Workers</h4>
               </>
             ) : activeTab === "shops" ? (
               <>
@@ -415,7 +415,7 @@ const ShopManagement = () => {
             </div>
           )}
           <Button
-            icon={FiPlus}
+            // icon={FiPlus}
             onClick={() => {
               if (selectedShop) {
                 resetWorkerForm();
@@ -465,7 +465,7 @@ const ShopManagement = () => {
       {/* Shops Grid, Workers Grid, or Admins Grid */}
       {!selectedShop && activeTab === "shops" ? (
         // Shops Grid
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-14">
           {loading ? (
             <div className="col-span-full">
               <LoadingSpinner size="md" />
@@ -583,7 +583,7 @@ const ShopManagement = () => {
         </div>
       ) : !selectedShop && activeTab === "admins" ? (
         // Admins Grid
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-14">
           {!admins || admins.length === 0 ? (
             <Card className="col-span-full py-12">
               <div className="text-center text-gray-500">
@@ -692,7 +692,7 @@ const ShopManagement = () => {
         </div>
       ) : (
         // Workers Grid
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-14">
           {workersLoading ? (
             <div className="col-span-full">
               <LoadingSpinner size="md" />

@@ -1,10 +1,9 @@
-import React from "react";
 import { motion } from "framer-motion";
 import clsx from "clsx";
 
 const Card = ({children,title,subtitle,actions,className,noPadding = "",hoverable = "",...props}) => {
   const cardClasses = clsx(
-    "bg-white rounded-xl shadow-card border border-gray-100 mt-3",
+    "bg-white rounded-xl shadow-card border mt-3",
     hoverable && "card-hover cursor-pointer",
     className
   );
@@ -30,7 +29,7 @@ const Card = ({children,title,subtitle,actions,className,noPadding = "",hoverabl
           {actions && <div className="flex items-center gap-2">{actions}</div>}
         </div>
       )}
-      <div className={noPadding ? undefined : "p-6"}>{children}</div>
+      <div className= "p-2 md:p-4 lg:p-6">{children}</div>
     </motion.div>
   );
 };

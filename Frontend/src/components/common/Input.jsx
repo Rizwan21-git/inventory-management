@@ -4,7 +4,9 @@ const Input = ({
   label,
   error,
   helperText,
+  RightIcon,
   icon: Icon,
+  onRightIconClick,
   className,
   containerClassName,
   ...props
@@ -32,6 +34,14 @@ const Input = ({
           </div>
         )}
         <input className={inputClasses} {...props} />
+        {RightIcon && (
+          <div
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer"
+            onClick={onRightIconClick}
+          >
+            <RightIcon className="w-5 h-5" />
+          </div>
+        )}
       </div>
       {error && <p className="mt-1 text-sm text-danger-600">{error}</p>}
       {helperText && !error && (

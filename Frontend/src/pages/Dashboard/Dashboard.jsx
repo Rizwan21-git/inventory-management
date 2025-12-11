@@ -70,7 +70,7 @@ const Dashboard = () => {
   const pendingPayments = stats?.pendingPayments || [];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <>
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -81,24 +81,25 @@ const Dashboard = () => {
             <FiPackage className="text-primary-600" />
             Dashboard
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-gray-600 text-sm md:text-xl mt-1">
             Welcome back! Here's what's happening today.
           </p>
         </div>
       </motion.div>
 
-      {/* KPI Controls: time range */}
-      <div className="mt-6 mb-6">
-        <Card>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-              <p className="text-sm text-gray-600 mr-2">View KPIs for</p>
+      <div className="mt-6 mb-6 space-y-6">
+        <Card className="p-4 bg-white rounded-2xl shadow-md border border-gray-100 hover:shadow-lg transition-shadow duration-300">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 flex-wrap">
+            {/* Filter Controls */}
+            <div className="flex flex-col md:flex-row md:items-center gap-3 flex-wrap">
+              <p className="text-sm text-gray-600">View KPIs for</p>
+
               <select
                 value={timeRange.period}
                 onChange={(e) =>
                   onTimeRangeChange({ period: e.target.value, month: "all" })
                 }
-                className="px-3 py-2 border rounded-lg"
+                className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 bg-white text-gray-700 shadow-sm transition-all"
               >
                 <option value="this_year">This Year (monthly)</option>
                 <option value="year">Specific Year</option>
@@ -110,7 +111,7 @@ const Dashboard = () => {
                   onChange={(e) =>
                     onTimeRangeChange({ year: Number(e.target.value) })
                   }
-                  className="px-3 py-2 border rounded-lg ml-2"
+                  className="px-2 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 bg-white text-gray-700 shadow-sm transition-all"
                   disabled={availableYears.length === 0}
                 >
                   {availableYears.length === 0 ? (
@@ -129,7 +130,7 @@ const Dashboard = () => {
                 <select
                   value={timeRange.month}
                   onChange={(e) => onTimeRangeChange({ month: e.target.value })}
-                  className="px-3 py-2 border rounded-lg ml-2"
+                  className="px-2 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 bg-white text-gray-700 shadow-sm transition-all"
                 >
                   <option value="all">All months</option>
                   {[
@@ -154,7 +155,8 @@ const Dashboard = () => {
               )}
             </div>
 
-            <div className="text-sm text-gray-500">
+            {/* Current Selection Display */}
+            <div className="text-sm text-gray-500 mt-2 md:mt-0">
               Showing KPIs for:{" "}
               <strong className="text-gray-900">
                 {timeRange.period === "this_year"
@@ -168,81 +170,114 @@ const Dashboard = () => {
             </div>
           </div>
         </Card>
-      </div>
 
-      {/* KPI Cards - refreshed UI */}
-      <div className="grid grid-cols-1 gap-8 mb-8 lg:grid-cols-1 items-start auto-rows-fr">
-        {/* Big Overview Card */}
-        <Card className="col-span-1 p-6 bg-gradient-to-br from-white to-gray-50 border border-gray-100">
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="text-xl font-semibold">Financial Overview</h3>
-              <p className="text-sm text-gray-500 mt-1">Totals for the selected period</p>
-            </div>
-            <div className="text-sm text-gray-500">{loading ? "Loading..." : `Period: ${timeRange.year}`}</div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 mt-5">
-            <div className="p-4 rounded-lg shadow-sm bg-white border border-gray-100 flex items-center gap-3 min-w-0">
-              <div className="p-3 bg-primary-50 rounded-lg text-primary-600"><FiDollarSign className="w-5 h-5"/></div>
+        {/* KPI Overview Cards */}
+        <div className="grid grid-cols-1 ">
+          {/* Financial Overview Card */}
+          <Card className="bg-gradient-to-br from-white to-gray-50 border border-gray-100 rounded-2xl shadow-sm p-4 space-y-4">
+            <div className="flex items-start justify-between">
               <div>
-                <div className="text-xs text-gray-500">Total Revenue</div>
-                <div className="text-lg font-bold text-green-700 mt-1 truncate text-right" title={formatCurrency(stats?.kpis?.totals?.totalRevenue || 0)}>
-                  {formatCompactCurrency(stats?.kpis?.totals?.totalRevenue || 0)}
+                <h3 className="text-lg md:text-xl font-semibold">
+                  Financial Overview
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  Totals for the selected period
+                </p>
+              </div>
+              <div className="text-sm text-gray-500">
+                {loading ? "Loading..." : `Period: ${timeRange.year}`}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+              {/* Card Item */}
+              {[
+                {
+                  label: "Total Revenue",
+                  value: stats?.kpis?.totals?.totalRevenue || 0,
+                  icon: FiDollarSign,
+                  color: "green-600",
+                  bgColor: "green-50",
+                },
+                {
+                  label: "Total Investment",
+                  value: stats?.kpis?.totals?.totalInvestment || 0,
+                  icon: FiBriefcase,
+                  color: "primary-600",
+                  bgColor: "primary-50",
+                },
+                {
+                  label: "Gross Profit",
+                  value: stats?.kpis?.totals?.grossProfit || 0,
+                  icon: FiTrendingUp,
+                  color: "indigo-700",
+                  bgColor: "indigo-50",
+                },
+                {
+                  label: "Total Expenses",
+                  value: stats?.kpis?.totals?.totalExpenses || 0,
+                  icon: FiFileText,
+                  color: "red-700",
+                  bgColor: "red-50",
+                },
+              ].map((item, idx) => (
+                <motion.div
+                  key={idx}
+                  whileHover={{
+                    scale: 1.03,
+                    boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+                  }}
+                  className="flex items-center gap-3 p-4 rounded-xl bg-white border border-gray-100"
+                >
+                  <div
+                    className={`p-3 rounded-lg bg-${item.bgColor} text-${item.color} flex items-center justify-center`}
+                  >
+                    <item.icon className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs text-gray-500">{item.label}</div>
+                    <div
+                      className={`text-sm md:text-lg font-bold text-${item.color} mt-1 truncate`}
+                    >
+                      {formatCompactCurrency(item.value)}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Net Profit */}
+            <div className="mt-4 p-4 rounded-xl bg-white border border-gray-100 flex items-center justify-between">
+              <div>
+                <div className="text-sm text-gray-500">Net Profit</div>
+                <div
+                  className={`text-xl md:text-2xl lg:text-3xl font-extrabold mt-1 ${
+                    (stats?.kpis?.totals?.netProfit || 0) >= 0
+                      ? "text-primary-600"
+                      : "text-danger-600"
+                  }`}
+                >
+                  {formatCompactCurrency(stats?.kpis?.totals?.netProfit || 0)}
                 </div>
               </div>
             </div>
-
-            <div className="p-4 rounded-lg shadow-sm bg-white border border-gray-100 flex items-center gap-3 min-w-0">
-              <div className="p-3 bg-primary-50 rounded-lg text-primary-600"><FiBriefcase className="w-5 h-5"/></div>
-              <div>
-                <div className="text-xs text-gray-500">Total Investment</div>
-                <div className="text-lg font-bold text-primary-700 mt-1 truncate text-right" title={formatCurrency(stats?.kpis?.totals?.totalInvestment || 0)}>
-                  {formatCompactCurrency(stats?.kpis?.totals?.totalInvestment || 0)}
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 rounded-lg shadow-sm bg-white border border-gray-100 flex items-center gap-3 min-w-0">
-              <div className="p-3 bg-indigo-50 rounded-lg text-indigo-600"><FiTrendingUp className="w-5 h-5"/></div>
-              <div>
-                <div className="text-xs text-gray-500">Gross Profit</div>
-                <div className="text-lg font-bold text-indigo-700 mt-1 truncate text-right" title={formatCurrency(stats?.kpis?.totals?.grossProfit || 0)}>
-                  {formatCompactCurrency(stats?.kpis?.totals?.grossProfit || 0)}
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 rounded-lg shadow-sm bg-white border border-gray-100 flex items-center gap-3 min-w-0">
-              <div className="p-3 bg-red-50 rounded-lg text-red-600"><FiFileText className="w-5 h-5"/></div>
-              <div>
-                <div className="text-xs text-gray-500">Total Expenses</div>
-                <div className="text-lg font-bold text-red-700 mt-1 truncate text-right" title={formatCurrency(stats?.kpis?.totals?.totalExpenses || 0)}>
-                  {formatCompactCurrency(stats?.kpis?.totals?.totalExpenses || 0)}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 p-4 rounded-lg border border-gray-100 bg-white flex items-center justify-between">
-            <div>
-              <div className="text-sm text-gray-500">Net Profit</div>
-              <div className={`text-3xl font-extrabold mt-1 ${ (stats?.kpis?.totals?.netProfit || 0) >= 0 ? 'text-primary-600' : 'text-danger-600'}`}>
-                {formatCurrency(stats?.kpis?.totals?.netProfit || 0)}
-              </div>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        </div>
       </div>
 
       {/* Alerts Section */}
-      <div className={`grid grid-cols-1 ${lowStockItems.length !=0 && pendingPayments.length !=0 && "lg:grid-cols-2" } mb-9  gap-6`}>
+      <div
+        className={`grid grid-cols-1 ${
+          lowStockItems?.length != 0 &&
+          pendingPayments?.length != 0 &&
+          "lg:grid-cols-2"
+        } mb-9  gap-6`}
+      >
         {/* Low Stock Alert */}
         {lowStockItems?.length > 0 && (
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 }}
             whileHover={{ scale: 1.02 }}
             onClick={() => navigate("/inventory?show=low_stock")}
             className="cursor-pointer"
@@ -255,36 +290,39 @@ const Dashboard = () => {
                 <LoadingSpinner size="sm" />
               ) : (
                 <div className="space-y-3 max-h-64 overflow-y-auto custom-scrollbar">
-                  {lowStockItems?.slice(0, lowStockItems.length > 3 ? 3 : lowStockItems.length).map((item) => (
-                    <motion.div
-                      key={item._id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      whileHover={{ x: 5 }}
-                      className="flex items-center justify-between p-3 bg-danger-50 rounded-lg"
-                    >
-                      <div className="flex items-center gap-3">
-                        <FiAlertCircle className="w-5 h-5 text-danger-600" />
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            {item.name}
-                          </p>
+                  {lowStockItems
+                    ?.slice(
+                      0,
+                      lowStockItems.length > 3 ? 3 : lowStockItems.length
+                    )
+                    .map((item) => (
+                      <motion.div
+                        key={item._id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex items-center justify-between p-3 bg-danger-50 rounded-lg"
+                      >
+                        <div className="flex items-center gap-3">
+                          <FiAlertCircle className="w-5 h-5 text-danger-600" />
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {item.name}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      <span className="text-danger-700 font-semibold">
-                        {item.quantity} left
-                      </span>
-                    </motion.div>
-                  ))}
-                 
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="text-center py-3 bg-danger-50 rounded-lg text-sm text-danger-700 font-semibold hover:bg-danger-100 transition-colors"
-                    >
-                      Click to view more details 
-                    </motion.div>
-               
+                        <span className="text-danger-700 font-semibold">
+                          {item.quantity} left
+                        </span>
+                      </motion.div>
+                    ))}
+
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-center py-3 bg-danger-50 rounded-lg text-sm text-danger-700 font-semibold hover:bg-danger-100 transition-colors"
+                  >
+                    Click to view more details
+                  </motion.div>
                 </div>
               )}
             </Card>
@@ -296,7 +334,7 @@ const Dashboard = () => {
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5 }}
+            whileHover={{ scale: 1.02 }}
             onClick={() => navigate("/finance?paymentStatus=pending")}
           >
             <Card
@@ -312,7 +350,6 @@ const Dashboard = () => {
                       key={payment.id}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      whileHover={{ x: 5 }}
                       className="flex items-center justify-between p-3 bg-warning-50 rounded-lg"
                     >
                       <div>
@@ -325,15 +362,14 @@ const Dashboard = () => {
                       </span>
                     </motion.div>
                   ))}
-                  
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="text-center py-3 bg-warning-50 rounded-lg text-sm text-warning-700 font-semibold hover:bg-warning-100 transition-colors"
-                    >
-                      Click to view more details
-                    </motion.div>
-                 
+
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-center py-3 bg-warning-50 rounded-lg text-sm text-warning-700 font-semibold hover:bg-warning-100 transition-colors"
+                  >
+                    Click to view more details
+                  </motion.div>
                 </div>
               )}
             </Card>
@@ -342,12 +378,12 @@ const Dashboard = () => {
       </div>
 
       {/* Quick Access Categories - Clickable with 3D effects */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
         {/* Doors Section */}
         <motion.div
           whileHover={{
-            scale: 1.05,
-            rotateY: 5,
+            scale: 1.01,
+            rotateY: 0,
             boxShadow: "0 10px 40px rgba(0,0,0,0.1)",
           }}
           whileTap={{ scale: 0.98 }}
@@ -407,8 +443,8 @@ const Dashboard = () => {
         {/* Home Interior Section */}
         <motion.div
           whileHover={{
-            scale: 1.05,
-            rotateY: 5,
+            scale: 1.01,
+            rotateY: 0,
             boxShadow: "0 10px 40px rgba(0,0,0,0.1)",
           }}
           whileTap={{ scale: 0.98 }}
@@ -420,7 +456,7 @@ const Dashboard = () => {
             title="Home Interior Section"
             subtitle="Quick access to interior products"
             hoverable
-            className="relative overflow-hidden"
+            className="relative overflow-hidden mb-6"
           >
             {loading ? (
               <LoadingSpinner size="sm" />
@@ -428,7 +464,7 @@ const Dashboard = () => {
               <>
                 <motion.div
                   className="absolute top-4 right-4"
-                  whileHover={{ rotate: -360, scale: 1.3 }}
+                  whileHover={{ rotate: -180, scale: 1.3 }}
                   transition={{ duration: 0.6 }}
                 >
                   <FiHome className="w-12 h-12 text-purple-200 opacity-50" />
@@ -465,7 +501,7 @@ const Dashboard = () => {
           </Card>
         </motion.div>
       </div>
-    </div>
+    </>
   );
 };
 
